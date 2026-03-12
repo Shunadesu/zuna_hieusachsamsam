@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+/* Theme xanh lá nhạt - Hiệu sách */
+:root {
+  --green-50: #e8f5e9;
+  --green-100: #c8e6c9;
+  --green-200: #a5d6a7;
+  --green-300: #81c784;
+  --green-400: #66bb6a;
+  --green-500: #4caf50;
+  --green-600: #43a047;
+  --green-700: #388e3c;
+  --green-800: #2e7d32;
+  --green-900: #1b5e20;
+  --bg: #f1f8e9;
+  --bg-card: #ffffff;
+  --text: #1b5e20;
+  --text-muted: #558b2f;
+  --border: #c5e1a5;
+  --shadow: rgba(76, 175, 80, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--green-700);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  cursor: pointer;
+  font: inherit;
+}
+
+input, textarea, select {
+  font: inherit;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.page {
+  min-height: calc(100vh - 180px);
+  padding: 1.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .container { padding: 0 0.75rem; }
+  .page { padding: 1rem 0; }
+}
