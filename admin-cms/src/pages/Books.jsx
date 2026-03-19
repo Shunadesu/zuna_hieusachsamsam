@@ -4,7 +4,7 @@ import { useBookStore } from '../store/useBookStore';
 import { useCategoryStore } from '../store/useCategoryStore';
 import api from '../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://hieusachsamsam.store';
 const inputCls = 'px-2 py-1.5 rounded border border-gray-300 text-sm';
 const smallBtn = 'bg-gray-600 text-white px-2 py-1 rounded text-xs';
 const PER_PAGE = 10;
@@ -49,6 +49,25 @@ export default function Books() {
     if (!confirm('Xóa sách này?')) return;
     try {
       await api.delete(`/api/books/${id}`);
+      invalidate();
+      fetchBooks({
+        page,
+        limit: PER_PAGE,
+        search: filters.search || undefined,
+        categoryId: filters.categoryId || undefined,
+        minPrice: filters.minPrice === '' ? undefined : filters.minPrice,
+        maxPrice: filters.maxPrice === '' ? undefined : filters.maxPrice,
+        minQuantity: filters.minQuantity === '' ? undefined : filters.minQuantity,
+        maxQuantity: filters.maxQuantity === '' ? undefined : filters.maxQuantity,
+      });
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleToggleHot = async (book) => {
+    try {
+      await api.put(`/api/books/${book._id}`, { isHot: !book.isHot });
       invalidate();
       fetchBooks({
         page,
@@ -164,6 +183,7 @@ export default function Books() {
               <th className="px-2 py-2 text-left text-xs font-medium w-24">Giá (₫)</th>
               <th className="px-2 py-2 text-left text-xs font-medium w-24">Giá gốc (₫)</th>
               <th className="px-2 py-2 text-left text-xs font-medium w-14">SL</th>
+              <th className="px-2 py-2 text-left text-xs font-medium w-16">Hot</th>
               <th className="px-2 py-2 text-left text-xs font-medium w-24">Trạng thái</th>
               <th className="px-2 py-2 text-left text-xs font-medium w-28">Thao tác</th>
             </tr>
@@ -198,12 +218,24 @@ export default function Books() {
                   <td className="px-2 py-2 text-sm text-gray-600">{b.originalPrice != null ? Number(b.originalPrice).toLocaleString('vi-VN') + ' ₫' : '—'}</td>
                   <td className="px-2 py-2 text-sm">{b.quantity}</td>
                   <td className="px-2 py-2">
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${b.isHot ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600'}`}>
+                      {b.isHot ? 'Hot' : '—'}
+                    </span>
+                  </td>
+                  <td className="px-2 py-2">
                     <span className={`text-xs px-1.5 py-0.5 rounded ${b.status === 'out_of_stock' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                       {b.status === 'out_of_stock' ? 'Hết hàng' : 'Còn hàng'}
                     </span>
                   </td>
                   <td className="px-2 py-2">
                     <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleHot(b)}
+                        className={`${smallBtn} ${b.isHot ? 'bg-orange-600 hover:bg-orange-700' : 'bg-gray-500 hover:bg-gray-600'}`}
+                      >
+                        {b.isHot ? 'Bỏ hot' : 'Chọn hot'}
+                      </button>
                       <button
                         type="button"
                         onClick={() => navigate(`/books/edit/${b._id}`)}

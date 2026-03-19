@@ -4,10 +4,11 @@ import { useCategoryStore } from '../store/useCategoryStore';
 import { useBookStore } from '../store/useBookStore';
 import api from '../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://hieusachsamsam.store';
 
-const inputCls = 'px-2 py-1.5 rounded border border-gray-300 w-full';
-const labelCls = 'block text-sm font-medium text-gray-700 mb-1';
+const inputCls =
+  'mt-1 px-3 py-2.5 rounded-lg border border-gray-300 w-full text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400/40 focus:border-gray-400';
+const labelCls = 'block text-sm font-medium text-gray-700';
 
 export default function AddBook() {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ export default function AddBook() {
     originalPrice: '',
     quantity: '',
     categoryId: '',
+    isHot: false,
     images: [''],
   });
   const [loading, setLoading] = useState(false);
@@ -48,6 +50,7 @@ export default function AddBook() {
           originalPrice: book.originalPrice ?? '',
           quantity: book.quantity ?? '',
           categoryId: book.categoryId?._id || book.categoryId || '',
+          isHot: !!book.isHot,
           images: imgs,
         });
       })
@@ -67,6 +70,10 @@ export default function AddBook() {
   const addImageRow = () => setImages((arr) => [...arr, '']);
   const removeImageRow = (index) => setImages((arr) => arr.filter((_, i) => i !== index));
   const changeImage = (index, value) => setImages((arr) => arr.map((v, i) => (i === index ? value : v)));
+  const resolveImageSrc = (url) => {
+    if (!url) return '';
+    return url.startsWith('http') ? url : `${API_URL}${url}`;
+  };
 
   const handleUploadFiles = async (e) => {
     const files = Array.from(e.target.files || []);
@@ -105,6 +112,7 @@ export default function AddBook() {
       originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined,
       quantity: Number(form.quantity) || 0,
       categoryId: form.categoryId || null,
+      isHot: !!form.isHot,
       images: images.length > 0 ? images : undefined,
     };
     setLoading(true);
@@ -128,28 +136,35 @@ export default function AddBook() {
   }
 
   return (
-    <div>
-      <div className="flex items-center gap-2 mb-4">
+    <div className="max-w-5xl">
+      <div className="flex items-center gap-2 mb-5">
         <button
           type="button"
           onClick={() => navigate('/books')}
-          className="text-gray-600 hover:text-gray-800 text-sm"
+          className="text-gray-600 hover:text-gray-800 text-sm font-medium"
         >
           ← Quay lại
         </button>
-        <h1 className="text-xl font-bold text-gray-800">{isEdit ? 'Chỉnh sửa sách' : 'Thêm sách'}</h1>
+        <h1 className="text-2xl font-bold text-gray-800">{isEdit ? 'Chỉnh sửa sách' : 'Thêm sách'}</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 max-w-3xl flex flex-col gap-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8 flex flex-col gap-7">
+        <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-4">
+          <p className="text-sm text-gray-700">
+            Điền thông tin cơ bản trước, sau đó thêm ảnh sách. Các trường có dấu <span className="text-red-500">*</span> là bắt buộc.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-4">
+            <h2 className="text-base font-semibold text-gray-800">Thông tin chính</h2>
             <label className={labelCls}>
               Tên sách <span className="text-red-500">*</span>
               <input
                 type="text"
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                className={inputCls + ' mt-1'}
+                className={inputCls}
                 required
                 placeholder="Nhập tên sách"
               />
@@ -160,7 +175,7 @@ export default function AddBook() {
               <select
                 value={form.categoryId}
                 onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
-                className={inputCls + ' mt-1'}
+                className={inputCls}
               >
                 <option value="">— Chọn thể loại —</option>
                 {categories.map((c) => (
@@ -169,7 +184,21 @@ export default function AddBook() {
               </select>
             </label>
 
-            <div className="grid grid-cols-2 gap-4">
+            <label className={labelCls}>
+              Mô tả
+              <textarea
+                value={form.description}
+                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                className={inputCls + ' min-h-[135px]'}
+                placeholder="Mô tả ngắn về sách, nội dung, tác giả..."
+                rows={5}
+              />
+            </label>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-4">
+            <h2 className="text-base font-semibold text-gray-800">Giá và tồn kho</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className={labelCls}>
                 Giá bán (₫) <span className="text-red-500">*</span>
                 <input
@@ -177,7 +206,7 @@ export default function AddBook() {
                   min={0}
                   value={form.price}
                   onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-                  className={inputCls + ' mt-1'}
+                  className={inputCls}
                   required
                   placeholder="0"
                 />
@@ -189,7 +218,7 @@ export default function AddBook() {
                   min={0}
                   value={form.originalPrice}
                   onChange={(e) => setForm((f) => ({ ...f, originalPrice: e.target.value }))}
-                  className={inputCls + ' mt-1'}
+                  className={inputCls}
                   placeholder="0"
                 />
               </label>
@@ -202,97 +231,95 @@ export default function AddBook() {
                 min={0}
                 value={form.quantity}
                 onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
-                className={inputCls + ' mt-1 max-w-[140px]'}
+                className={inputCls + ' max-w-[180px]'}
                 required
                 placeholder="0"
               />
             </label>
-          </div>
 
-          <div className="flex flex-col gap-4">
-            <label className={labelCls}>
-              Mô tả
-              <textarea
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                className={inputCls + ' mt-1 min-h-[120px]'}
-                placeholder="Mô tả ngắn"
-                rows={4}
+            <label className="inline-flex items-center gap-2.5 text-sm text-gray-700 border border-gray-200 rounded-lg px-3 py-2 w-fit">
+              <input
+                type="checkbox"
+                checked={form.isHot}
+                onChange={(e) => setForm((f) => ({ ...f, isHot: e.target.checked }))}
+                className="h-4 w-4"
               />
+              Đánh dấu sách hot
             </label>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className={labelCls}>Ảnh sách</span>
-                <div className="flex gap-2">
-                  <label className="text-xs text-gray-700 border border-gray-300 px-2 py-1 rounded cursor-pointer hover:bg-gray-50">
-                    {uploading ? 'Đang upload...' : 'Upload ảnh'}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleUploadFiles}
-                      className="hidden"
-                    />
-                  </label>
-                  <button
-                    type="button"
-                    onClick={addImageRow}
-                    className="text-xs text-gray-600 hover:text-gray-800 border border-gray-300 px-2 py-1 rounded"
-                  >
-                    + Thêm URL
-                  </button>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                {form.images.map((url, index) => (
-                  <div key={index} className="flex gap-2 items-center">
-                    <input
-                      type="text"
-                      value={url}
-                      onChange={(e) => changeImage(index, e.target.value)}
-                      className={inputCls + ' text-sm'}
-                      placeholder="https://... hoặc /uploads/..."
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImageRow(index)}
-                      className="text-red-600 hover:text-red-700 text-xs shrink-0"
-                      title="Xóa dòng ảnh"
-                    >
-                      Xóa
-                    </button>
-                  </div>
-                ))}
-                {form.images.filter((u) => u.trim()).length > 0 && (
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {form.images.filter((u) => u.trim()).map((url, i) => (
-                      <img
-                        key={i}
-                        src={url}
-                        alt=""
-                        className="w-14 h-14 object-cover rounded border border-gray-200"
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         </div>
 
-        <div className="flex gap-2 pt-2">
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <span className="text-base font-semibold text-gray-800">Ảnh sách</span>
+            <div className="flex gap-2">
+              <label className="text-sm text-gray-700 border border-gray-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-50">
+                {uploading ? 'Đang upload...' : 'Upload ảnh'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleUploadFiles}
+                  className="hidden"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={addImageRow}
+                className="text-sm text-gray-700 hover:text-gray-900 border border-gray-300 px-3 py-2 rounded-lg"
+              >
+                + Thêm URL
+              </button>
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mb-3">Bạn có thể upload nhiều ảnh hoặc dán URL ảnh trực tiếp.</p>
+          <div className="flex flex-col gap-3">
+            {form.images.map((url, index) => (
+              <div key={index} className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={url}
+                  onChange={(e) => changeImage(index, e.target.value)}
+                  className={inputCls}
+                  placeholder="https://... hoặc /uploads/..."
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImageRow(index)}
+                  className="text-red-600 hover:text-red-700 text-sm shrink-0 px-2"
+                  title="Xóa dòng ảnh"
+                >
+                  Xóa
+                </button>
+              </div>
+            ))}
+            {form.images.filter((u) => u.trim()).length > 0 && (
+              <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-7 gap-2 pt-1">
+                {form.images.filter((u) => u.trim()).map((url, i) => (
+                  <img
+                    key={i}
+                    src={resolveImageSrc(url)}
+                    alt={`Ảnh sách ${i + 1}`}
+                    className="w-full aspect-square object-cover rounded-lg border border-gray-200"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 pt-1">
           <button
             type="submit"
             disabled={loading}
-            className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 font-medium disabled:opacity-50"
+            className="bg-gray-700 text-white px-5 py-2.5 rounded-lg hover:bg-gray-600 font-medium disabled:opacity-50"
           >
             {loading ? 'Đang lưu...' : isEdit ? 'Cập nhật' : 'Thêm sách'}
           </button>
           <button
             type="button"
             onClick={() => navigate('/books')}
-            className="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
           >
             Hủy
           </button>

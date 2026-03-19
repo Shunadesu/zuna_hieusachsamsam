@@ -12,6 +12,7 @@ const bookSchema = new mongoose.Schema(
     categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
     quantity: { type: Number, required: true, min: 0, default: 0 },
     status: { type: String, enum: ['available', 'out_of_stock'], default: 'available' },
+    isHot: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

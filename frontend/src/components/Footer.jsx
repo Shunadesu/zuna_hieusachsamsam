@@ -1,38 +1,110 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../services/api';
+import { useApiStore } from '../store/apiStore';
+import { FaFacebookF, FaInstagram, FaTiktok, FaPhoneAlt } from 'react-icons/fa';
+import { SiZalo } from 'react-icons/si';
 
 export default function Footer() {
-  const [config, setConfig] = useState(null);
+  const { siteConfig, fetchSiteConfig } = useApiStore();
+
   useEffect(() => {
-    api.get('/api/site/config').then(setConfig).catch(() => {});
-  }, []);
+    fetchSiteConfig().catch(() => {});
+  }, [fetchSiteConfig]);
+
+  const buildZaloHref = (value) => {
+    const raw = (value || '').trim();
+    if (!raw) return '';
+    if (raw.startsWith('http')) return raw;
+    const digits = raw.replace(/\D/g, '');
+    return digits ? `https://zalo.me/${digits}` : '';
+  };
+
+  const buildPhoneHref = (value) => {
+    const raw = (value || '').trim();
+    if (!raw) return '';
+    const digits = raw.replace(/[^\d+]/g, '');
+    return digits ? `tel:${digits}` : '';
+  };
+
+  const links = [
+    { key: 'phone', url: buildPhoneHref(siteConfig?.phone), label: 'Liên hệ ngay', Icon: FaPhoneAlt },
+    { key: 'zalo', url: buildZaloHref(siteConfig?.zaloUrl), label: 'Zalo', Icon: SiZalo },
+    { key: 'facebook', url: siteConfig?.facebookUrl, label: 'Facebook', Icon: FaFacebookF },
+    { key: 'instagram', url: siteConfig?.instagramUrl, label: 'Instagram', Icon: FaInstagram },
+    { key: 'tiktok', url: siteConfig?.tiktokUrl, label: 'TikTok', Icon: FaTiktok },
+  ].filter((l) => l.url);
+  const policyLinks = [
+    { to: '/ve-chung-toi', label: 'Về chúng tôi' },
+    { to: '/lien-he', label: 'Liên hệ' },
+    { to: '/huong-dan-mua-hang-online', label: 'Hướng dẫn mua hàng Online' },
+    { to: '/huong-dan-thanh-ly-sach', label: 'Hướng dẫn thanh lý sách' },
+    { to: '/cau-hoi-thuong-gap', label: 'Câu hỏi thường gặp' },
+  ];
 
   return (
-    <footer style={styles.footer}>
-      <div className="container" style={styles.inner}>
-        <div>
-          <strong>Hiệu sách</strong>
-          <p style={styles.muted}>Sách hay - Giá tốt</p>
+    <footer className="bg-green-800 text-white mt-auto">
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h3 className="text-lg font-bold text-white mb-2">Hiệu Sách Mỹ Hạnh</h3>
+            <div className="text-sm text-green-100 space-y-1.5">
+              {/* <p>36 người theo dõi • 1 đang theo dõi</p> */}
+              <p>Thu mua - bán sách truyện cũ trên toàn quốc</p>
+              <p>Giúp bạn tìm lại tuổi thơ trên từng trang sách truyện.</p>
+              <p>Sđt/zalo 0985017828</p>
+              <p>Địa chỉ: 120/61/16 đường số 59, p14, Gò Vấp, HCM.</p>
+            </div>
+            <div className="flex gap-3 mt-4">
+              {links.map(({ key, url, label, Icon }) => (
+                <a
+                  key={key}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/10 hover:bg-white/15 border border-white/10 text-green-100 hover:text-white transition"
+                  aria-label={label}
+                  title={label}
+                >
+                  <Icon className="w-4 h-4" aria-hidden="true" />
+                </a>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-white mb-2">Thông tin</h3>
+            <ul className="space-y-2">
+              {policyLinks.map((item) => (
+                <li key={item.to}>
+                  <Link
+                    to={item.to}
+                    className="text-green-100 hover:text-white text-sm transition"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-white mb-2">Liên hệ & Vị trí</h3>
+            {siteConfig?.googleMapsUrl ? (
+              <iframe
+                src={siteConfig.googleMapsUrl}
+                title="Bản đồ"
+                className="w-full h-48 rounded-lg border-0"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            ) : (
+              <p className="text-green-200 text-sm">Xem bản đồ tại trang liên hệ.</p>
+            )}
+          </div>
         </div>
-        <div style={styles.links}>
-          <Link to="/books">Sách</Link>
-          <Link to="/contact">Liên hệ</Link>
-          {config?.facebookUrl && <a href={config.facebookUrl} target="_blank" rel="noopener noreferrer">Facebook</a>}
-          {config?.instagramUrl && <a href={config.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram</a>}
-          {config?.tiktokUrl && <a href={config.tiktokUrl} target="_blank" rel="noopener noreferrer">TikTok</a>}
-          {config?.googleMapsUrl && <a href={config.googleMapsUrl} target="_blank" rel="noopener noreferrer">Google Maps</a>}
+        <div className="border-t border-green-700 mt-6 pt-4 text-center text-green-300 text-sm">
+          © {new Date().getFullYear()} Hiệu Sách Mỹ Hạnh. All rights reserved.
         </div>
       </div>
-      <div style={styles.copyright}>© {new Date().getFullYear()} Hiệu sách. All rights reserved.</div>
     </footer>
   );
 }
-
-const styles = {
-  footer: { background: 'var(--green-200)', borderTop: '1px solid var(--border)', marginTop: 'auto' },
-  inner: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 1rem', flexWrap: 'wrap', gap: '1rem' },
-  muted: { color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: 4 },
-  links: { display: 'flex', gap: '1rem', flexWrap: 'wrap' },
-  copyright: { textAlign: 'center', padding: '0.75rem', fontSize: '0.85rem', color: 'var(--text-muted)' },
-};

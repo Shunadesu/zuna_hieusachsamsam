@@ -4,13 +4,15 @@ export async function createOrder(req, res) {
   try {
     const { guestInfo, items, total, shippingFee, paymentMethod } = req.body;
     if (!items?.length || total == null) return res.status(400).json({ message: 'Items and total required' });
+    const method = ['bank_transfer', 'cod', 'direct'].includes(paymentMethod) ? paymentMethod : 'bank_transfer';
+    const normalizedShippingFee = method === 'cod' ? 25000 : Number(shippingFee) || 0;
     const order = await Order.create({
       userId: req.userId || null,
       guestInfo: guestInfo || null,
       items,
       total: Number(total),
-      shippingFee: Number(shippingFee) || 0,
-      paymentMethod: paymentMethod || 'bank_transfer',
+      shippingFee: normalizedShippingFee,
+      paymentMethod: method,
     });
     res.status(201).json(order);
   } catch (err) {

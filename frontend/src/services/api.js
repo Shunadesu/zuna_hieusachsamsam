@@ -1,25 +1,31 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import axios from 'axios';
 
-function getToken() {
-  return localStorage.getItem('token');
-}
+const API_URL = import.meta.env.VITE_API_URL || 'https://hieusachsamsam.store';
 
-export async function request(path, options = {}) {
-  const url = `${API_URL}${path}`;
-  const headers = { 'Content-Type': 'application/json', ...options.headers };
-  const token = getToken();
-  if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(url, { ...options, headers });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || res.statusText);
-  return data;
-}
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-export const api = {
-  get: (path) => request(path),
-  post: (path, body) => request(path, { method: 'POST', body: JSON.stringify(body) }),
-  put: (path, body) => request(path, { method: 'PUT', body: JSON.stringify(body) }),
-  delete: (path) => request(path, { method: 'DELETE' }),
-};
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

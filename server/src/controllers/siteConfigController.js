@@ -18,10 +18,12 @@ export async function getConfig(req, res) {
 export async function updateConfig(req, res) {
   try {
     const config = await getOrCreateConfig();
-    const { facebookUrl, instagramUrl, tiktokUrl, googleMapsUrl } = req.body;
+    const { facebookUrl, instagramUrl, tiktokUrl, zaloUrl, phone, googleMapsUrl } = req.body;
     if (facebookUrl !== undefined) config.facebookUrl = facebookUrl;
     if (instagramUrl !== undefined) config.instagramUrl = instagramUrl;
     if (tiktokUrl !== undefined) config.tiktokUrl = tiktokUrl;
+    if (zaloUrl !== undefined) config.zaloUrl = zaloUrl;
+    if (phone !== undefined) config.phone = phone;
     if (googleMapsUrl !== undefined) config.googleMapsUrl = googleMapsUrl;
     await config.save();
     res.json(config);

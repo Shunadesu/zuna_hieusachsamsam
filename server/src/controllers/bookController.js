@@ -12,10 +12,11 @@ function slugify(text) {
 
 export async function getBooks(req, res) {
   try {
-    const { search, categoryId, page = 1, limit = 20, minPrice, maxPrice, minQuantity, maxQuantity } = req.query;
+    const { search, categoryId, page = 1, limit = 20, minPrice, maxPrice, minQuantity, maxQuantity, isHot } = req.query;
     const query = {};
     if (search) query.title = new RegExp(search, 'i');
     if (categoryId) query.categoryId = categoryId;
+    if (isHot !== undefined && isHot !== '') query.isHot = isHot === 'true';
     if (minPrice !== undefined && minPrice !== '') query.price = { ...(query.price || {}), $gte: Number(minPrice) };
     if (maxPrice !== undefined && maxPrice !== '') query.price = { ...(query.price || {}), $lte: Number(maxPrice) };
     if (minQuantity !== undefined && minQuantity !== '') query.quantity = { ...(query.quantity || {}), $gte: Number(minQuantity) };
@@ -53,7 +54,7 @@ export async function getBookById(req, res) {
 
 export async function createBook(req, res) {
   try {
-    const { title, description, price, originalPrice, image, images, categoryId, quantity, status } = req.body;
+    const { title, description, price, originalPrice, image, images, categoryId, quantity, status, isHot } = req.body;
     const baseSlug = slugify(title || 'book');
     let slug = baseSlug;
     let n = 0;
@@ -71,6 +72,7 @@ export async function createBook(req, res) {
       categoryId: categoryId || null,
       quantity: Number(quantity) || 0,
       status: quantity === 0 ? 'out_of_stock' : (status || 'available'),
+      isHot: isHot === true || isHot === 'true',
     });
     res.status(201).json(book);
   } catch (err) {
@@ -82,7 +84,7 @@ export async function updateBook(req, res) {
   try {
     const book = await Book.findById(req.params.id);
     if (!book) return res.status(404).json({ message: 'Book not found' });
-    const { title, description, price, originalPrice, image, images, categoryId, quantity, status } = req.body;
+    const { title, description, price, originalPrice, image, images, categoryId, quantity, status, isHot } = req.body;
     if (title !== undefined) book.title = title;
     if (description !== undefined) book.description = description;
     if (price !== undefined) book.price = Number(price);
@@ -99,6 +101,7 @@ export async function updateBook(req, res) {
       book.status = book.quantity === 0 ? 'out_of_stock' : 'available';
     }
     if (status !== undefined) book.status = status;
+    if (isHot !== undefined) book.isHot = isHot === true || isHot === 'true';
     if (title) book.slug = slugify(title);
     await book.save();
     res.json(book);

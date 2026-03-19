@@ -1,68 +1,41 @@
-@import "tailwindcss";
-
-/* Theme xanh lá nhạt - Hiệu sách */
-:root {
-  --green-50: #e8f5e9;
-  --green-100: #c8e6c9;
-  --green-200: #a5d6a7;
-  --green-300: #81c784;
-  --green-400: #66bb6a;
-  --green-500: #4caf50;
-  --green-600: #43a047;
-  --green-700: #388e3c;
-  --green-800: #2e7d32;
-  --green-900: #1b5e20;
-  --bg: #f1f8e9;
-  --bg-card: #ffffff;
-  --text: #1b5e20;
-  --text-muted: #558b2f;
-  --border: #c5e1a5;
-  --shadow: rgba(76, 175, 80, 0.15);
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.5;
-  min-height: 100vh;
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-a {
-  color: var(--green-700);
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
-}
-
-button {
-  cursor: pointer;
-  font: inherit;
+/* Floating contact button gradient animation */
+.contact-gradient {
+  background: linear-gradient(120deg, #16a34a, #22c55e, #f97316, #fbbf24);
+  background-size: 240% 240%;
+  animation: contactGradient 6s ease-in-out infinite;
 }
 
-input, textarea, select {
-  font: inherit;
+@keyframes contactGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Hide scrollbars globally while preserving scroll behavior */
+* {
+  -ms-overflow-style: none; /* IE and old Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-.page {
-  min-height: calc(100vh - 180px);
-  padding: 1.5rem 0;
-}
-
-@media (max-width: 768px) {
-  .container { padding: 0 0.75rem; }
-  .page { padding: 1rem 0; }
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }

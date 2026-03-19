@@ -24,7 +24,11 @@ const orderSchema = new mongoose.Schema(
       enum: ['pending', 'confirmed', 'paid', 'shipping', 'completed', 'cancelled'],
       default: 'pending',
     },
-    paymentMethod: { type: String, default: 'bank_transfer' },
+    paymentMethod: {
+      type: String,
+      enum: ['bank_transfer', 'cod', 'direct'],
+      default: 'bank_transfer',
+    },
     paymentConfirmedAt: Date,
     paymentNote: String,
   },
