@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <title>My Hanh Bookstore</title>
+  <defs>
+    <linearGradient id="mh" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#16a34a"/>
+      <stop offset="1" stop-color="#14532d"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#mh)"/>
+  <rect x="5.5" y="7.5" width="9.5" height="17" rx="1.5" fill="#fff"/>
+  <rect x="17" y="7.5" width="9.5" height="17" rx="1.5" fill="#f0fdf4"/>
+  <path stroke="#14532d" stroke-width="1.5" stroke-linecap="round" d="M16 8.25v15.5"/>
+</svg>

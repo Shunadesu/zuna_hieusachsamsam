@@ -3,11 +3,14 @@ import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useApiStore } from '../store/apiStore';
 import { useCartStore } from '../store/cartStore';
+import { useHomeHeroStore } from '../store/homeHeroStore';
 import { useToastStore } from '../store/toastStore';
 import SliderBanner from '../components/SliderBanner';
 import BelowSliderBanners from '../components/BelowSliderBanners';
 import BookGrid from '../components/BookGrid';
 import HotBooksSection from '../components/HotBooksSection';
+import HomeHeroSkeleton from '../components/HomeHeroSkeleton';
+import HomeCategoryStripSkeleton from '../components/HomeCategoryStripSkeleton';
 import Seo from '../components/Seo';
 import { FaTruck, FaRecycle, FaListUl, FaShoppingCart, FaBolt } from 'react-icons/fa';
 
@@ -24,19 +27,43 @@ export default function HomePage() {
     fetchCategories,
     fetchPromotions,
     fetchSliders,
-    loading,
   } = useApiStore();
   const addItem = useCartStore((s) => s.addItem);
   const clearCart = useCartStore((s) => s.clearCart);
   const showToast = useToastStore((s) => s.show);
+  const heroDataReady = useHomeHeroStore((s) => s.heroDataReady);
+  const categoryStripReady = useHomeHeroStore((s) => s.categoryStripReady);
+  const setHeroDataReady = useHomeHeroStore((s) => s.setHeroDataReady);
+  const setCategoryStripReady = useHomeHeroStore((s) => s.setCategoryStripReady);
+  const resetHomeHero = useHomeHeroStore((s) => s.resetHomeHero);
 
   useEffect(() => {
     fetchBooks({ limit: 120 }).catch(() => {});
     fetchHotBooks(12).catch(() => {});
-    fetchCategories().catch(() => {});
     fetchPromotions().catch(() => {});
-    fetchSliders().catch(() => {});
-  }, [fetchBooks, fetchHotBooks, fetchCategories, fetchPromotions, fetchSliders]);
+
+    let cancelled = false;
+    const categoriesPromise = fetchCategories().catch(() => {});
+    categoriesPromise.finally(() => {
+      if (!cancelled) setCategoryStripReady(true);
+    });
+    Promise.all([categoriesPromise, fetchSliders().catch(() => {})]).finally(() => {
+      if (!cancelled) setHeroDataReady(true);
+    });
+    return () => {
+      cancelled = true;
+      resetHomeHero();
+    };
+  }, [
+    fetchBooks,
+    fetchHotBooks,
+    fetchCategories,
+    fetchPromotions,
+    fetchSliders,
+    setHeroDataReady,
+    setCategoryStripReady,
+    resetHomeHero,
+  ]);
 
   const now = new Date();
   const activePromotions = useMemo(
@@ -116,6 +143,9 @@ export default function HomePage() {
         description="Sách Truyện Mỹ Hạnh - thu mua, bán sách truyện cũ toàn quốc với nhiều danh mục và ưu đãi mỗi ngày."
       />
       <section className="mb-8">
+        {!heroDataReady ? (
+          <HomeHeroSkeleton />
+        ) : (
         <div className="lg:grid flex flex-col-reverse lg:grid-cols-10 gap-6 items-stretch">
           {/* LEFT: category sidebar (3/10) */}
           <aside className="lg:col-span-3 order-1">
@@ -195,35 +225,40 @@ export default function HomePage() {
             <BelowSliderBanners sliders={sliders} />
           </div>
         </div>
+        )}
       </section>
 
-      {categories?.length > 0 && (
+      {(!categoryStripReady || (categories?.length ?? 0) > 0) && (
         <section className="mb-8">
           <h2 className="text-xl font-bold text-green-800 mb-4">Thư mục sách</h2>
-          <div className="bg-white rounded-xl border border-green-100 shadow-sm px-4 py-5">
-            <div className="flex gap-5 overflow-x-auto pb-2">
-              {categories.map((cat) => (
-                <Link
-                  key={cat._id}
-                  to={`/sach?categoryId=${cat._id}`}
-                  className="min-w-[90px] flex flex-col items-center text-center group"
-                >
-                  <div className="w-20 h-20 rounded-full overflow-hidden border border-green-200 bg-green-50 shadow-sm group-hover:shadow-md transition">
-                    {cat.image ? (
-                      <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl text-green-700">
-                        📚
-                      </div>
-                    )}
-                  </div>
-                  <p className="mt-2 text-sm font-medium text-gray-700 leading-tight line-clamp-2">
-                    {cat.name}
-                  </p>
-                </Link>
-              ))}
+          {!categoryStripReady ? (
+            <HomeCategoryStripSkeleton />
+          ) : (
+            <div className="bg-white rounded-xl border border-green-100 shadow-sm px-4 py-5">
+              <div className="flex gap-5 overflow-x-auto pb-2">
+                {categories.map((cat) => (
+                  <Link
+                    key={cat._id}
+                    to={`/sach?categoryId=${cat._id}`}
+                    className="min-w-[90px] flex flex-col items-center text-center group"
+                  >
+                    <div className="w-20 h-20 rounded-full overflow-hidden border border-green-200 bg-green-50 shadow-sm group-hover:shadow-md transition">
+                      {cat.image ? (
+                        <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-2xl text-green-700">
+                          📚
+                        </div>
+                      )}
+                    </div>
+                    <p className="mt-2 text-sm font-medium text-gray-700 leading-tight line-clamp-2">
+                      {cat.name}
+                    </p>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </section>
       )}
 
