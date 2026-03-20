@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { FaShoppingCart, FaBolt } from 'react-icons/fa';
 import { useCartStore } from '../store/cartStore';
 import { useToastStore } from '../store/toastStore';
 
@@ -30,7 +31,7 @@ export default function BookCard({ book, originalPrice, discountPrice }) {
 
   return (
     <div className="bg-white rounded-xl border border-green-100 shadow-sm overflow-hidden hover:shadow-md transition flex flex-col">
-      <Link to={`/sach/${book.slug}`} className="block flex-1">
+      <Link to={`/sach/${book.slug}`} className="block flex-1 min-w-0" title={book.title}>
         <div className="aspect-[3/4] bg-green-50 overflow-hidden">
           {book.image ? (
             <img
@@ -45,8 +46,8 @@ export default function BookCard({ book, originalPrice, discountPrice }) {
           )}
         </div>
         <div className="p-3 flex-1 flex flex-col">
-          <h3 className="text-base font-semibold text-green-800 line-clamp-2">{book.title}</h3>
-          <div className="mt-2 min-h-[48px]">
+          <h3 className="text-base font-semibold text-green-800 line-clamp-1 min-w-0">{book.title}</h3>
+          <div className="mt-2 min-h-[44px]">
             <span className="text-green-800 font-bold block">
               {displayPrice.toLocaleString('vi-VN')}₫
             </span>
@@ -71,16 +72,20 @@ export default function BookCard({ book, originalPrice, discountPrice }) {
         <button
           type="button"
           onClick={handleAddToCart}
-          className="w-full py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition"
+          aria-label="Thêm vào giỏ"
+          className="w-full py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition flex items-center justify-center gap-1.5"
         >
-          Thêm giỏ
+          <FaShoppingCart className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0" aria-hidden />
+          <span className="hidden md:inline">Thêm giỏ</span>
         </button>
         <button
           type="button"
           onClick={handleBuyNow}
-          className="w-full py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition"
+          aria-label="Mua ngay"
+          className="w-full py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition flex items-center justify-center gap-1.5"
         >
-          Mua ngay
+          <FaBolt className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0" aria-hidden />
+          <span className="hidden md:inline">Mua ngay</span>
         </button>
       </div>
     </div>

@@ -45,10 +45,7 @@ function AppInner() {
         <Route
           path="/"
           element={
-            <Layout
-              onOpenLogin={() => setLoginOpen(true)}
-              onOpenCart={() => setCartOpen(true)}
-            />
+            <Layout onOpenCart={() => setCartOpen(true)} />
           }
         >
           <Route index element={<HomePage />} />

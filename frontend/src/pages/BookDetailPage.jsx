@@ -352,7 +352,7 @@ export default function BookDetailPage() {
         </div>
 
         {similarLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 animate-pulse">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 animate-pulse">
             {Array.from({ length: 5 }).map((_, idx) => (
               <div key={idx} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <div className="aspect-[3/4] bg-gray-200" />

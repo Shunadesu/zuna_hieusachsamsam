@@ -9,7 +9,7 @@ import BelowSliderBanners from '../components/BelowSliderBanners';
 import BookGrid from '../components/BookGrid';
 import HotBooksSection from '../components/HotBooksSection';
 import Seo from '../components/Seo';
-import { FaTruck, FaRecycle, FaListUl } from 'react-icons/fa';
+import { FaTruck, FaRecycle, FaListUl, FaShoppingCart, FaBolt } from 'react-icons/fa';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -116,7 +116,7 @@ export default function HomePage() {
         description="Sách Truyện Mỹ Hạnh - thu mua, bán sách truyện cũ toàn quốc với nhiều danh mục và ưu đãi mỗi ngày."
       />
       <section className="mb-8">
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 items-stretch">
+        <div className="lg:grid flex flex-col-reverse lg:grid-cols-10 gap-6 items-stretch">
           {/* LEFT: category sidebar (3/10) */}
           <aside className="lg:col-span-3 order-1">
             <div className="bg-white rounded-xl shadow-sm border border-green-100 overflow-hidden h-full flex flex-col">
@@ -273,10 +273,11 @@ export default function HomePage() {
                         )}
                       </div>
                     </Link>
-                    <div className="p-3">
+                    <div className="p-3 min-w-0">
                       <Link
                         to={`/sach/${book.slug}`}
-                        className="text-base font-semibold text-green-800 line-clamp-2 hover:text-green-700"
+                        className="block text-base font-semibold text-green-800 line-clamp-1 min-w-0 hover:text-green-700"
+                        title={book.title}
                       >
                         {book.title}
                       </Link>
@@ -303,16 +304,20 @@ export default function HomePage() {
                         <button
                           type="button"
                           onClick={() => handleAddToCart(book)}
-                          className="py-2 rounded-lg bg-green-600 text-white text-xs font-medium hover:bg-green-700 transition"
+                          aria-label="Thêm vào giỏ"
+                          className="py-2 rounded-lg bg-green-600 text-white text-xs md:text-sm font-medium hover:bg-green-700 transition flex items-center justify-center gap-1.5"
                         >
-                          Thêm giỏ
+                          <FaShoppingCart className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0" aria-hidden />
+                          <span className="hidden md:inline">Thêm giỏ</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => handleBuyNow(book)}
-                          className="py-2 rounded-lg bg-amber-500 text-white text-xs font-medium hover:bg-amber-600 transition"
+                          aria-label="Mua ngay"
+                          className="py-2 rounded-lg bg-amber-500 text-white text-xs md:text-sm font-medium hover:bg-amber-600 transition flex items-center justify-center gap-1.5"
                         >
-                          Mua ngay
+                          <FaBolt className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0" aria-hidden />
+                          <span className="hidden md:inline">Mua ngay</span>
                         </button>
                       </div>
                     </div>

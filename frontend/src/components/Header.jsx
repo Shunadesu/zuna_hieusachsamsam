@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
 import SearchBar from './SearchBar';
+import HeaderCallToBuy from './HeaderCallToBuy';
 
-export default function Header({ onOpenLogin, onOpenCart }) {
+export default function Header({ onOpenCart }) {
   const { user, logout } = useAuthStore();
   const { cartItems } = useCartStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -24,16 +25,20 @@ export default function Header({ onOpenLogin, onOpenCart }) {
   return (
     <header className="bg-white border-b border-green-100 shadow-sm sticky top-0 z-30">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between gap-4 py-3">
-          <Link to="/" className="text-xl font-bold text-green-800 shrink-0">
+        <div className="flex items-center justify-between gap-3 sm:gap-4 py-3">
+          <Link
+            to="/"
+            className="text-base sm:text-xl font-bold text-green-800 min-w-0 leading-tight pr-2"
+          >
             Sách Truyện Mỹ Hạnh
           </Link>
 
-          <div className="hidden md:flex flex-1 justify-center">
+          <div className="hidden md:flex flex-1 justify-center min-w-0 px-2">
             <SearchBar />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            <HeaderCallToBuy />
             <button
               type="button"
               onClick={onOpenCart}
@@ -50,25 +55,17 @@ export default function Header({ onOpenLogin, onOpenCart }) {
               )}
             </button>
             {user ? (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 hidden sm:inline">{user.name}</span>
+              <div className="flex items-center gap-2 pl-1">
+                <span className="text-sm text-gray-600 hidden sm:inline max-w-[8rem] truncate">{user.name}</span>
                 <button
                   type="button"
                   onClick={logout}
-                  className="text-sm text-green-800 hover:text-green-700 font-medium"
+                  className="text-sm text-green-800 hover:text-green-700 font-medium whitespace-nowrap"
                 >
                   Đăng xuất
                 </button>
               </div>
-            ) : (
-              <button
-                type="button"
-                onClick={onOpenLogin}
-                className="text-sm font-medium text-green-800 hover:text-green-700 border border-green-700 px-3 py-1.5 rounded-lg hover:bg-green-50 transition"
-              >
-                Đăng nhập / Đăng ký
-              </button>
-            )}
+            ) : null}
             <button
               type="button"
               onClick={() => setMobileMenuOpen((o) => !o)}

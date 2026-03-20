@@ -1,9 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function SearchBar({ defaultValue = '', onSearch, placeholder = 'Tìm sách...' }) {
+export default function SearchBar({
+  defaultValue = '',
+  onSearch,
+  placeholder = 'Tìm sách...',
+  fullWidth = false,
+}) {
   const [query, setQuery] = useState(defaultValue);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setQuery(defaultValue);
+  }, [defaultValue]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -16,7 +25,10 @@ export default function SearchBar({ defaultValue = '', onSearch, placeholder = '
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-1 max-w-md">
+    <form
+      onSubmit={handleSubmit}
+      className={fullWidth ? 'flex w-full' : 'flex flex-1 max-w-md'}
+    >
       <input
         type="search"
         value={query}
