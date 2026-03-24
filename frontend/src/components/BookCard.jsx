@@ -46,6 +46,7 @@ export default function BookCard({ book, originalPrice, discountPrice }) {
             <img
               src={book.image}
               alt={book.title}
+              loading="lazy"
               className="w-full h-full object-cover"
             />
           ) : (

@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay } from 'swiper/modules';
-import { useApiStore } from '../store/apiStore';
-import { Link } from 'react-router-dom';
-import 'swiper/css';
-import 'swiper/css/autoplay';
-import 'swiper/css/pagination';
+import { useEffect } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay } from "swiper/modules";
+import { useApiStore } from "../store/apiStore";
+import { Link } from "react-router-dom";
+import "swiper/css";
+import "swiper/css/autoplay";
+import "swiper/css/pagination";
 
 export default function SliderBanner() {
   const { sliders, fetchSliders } = useApiStore();
@@ -34,19 +34,30 @@ export default function SliderBanner() {
         {mainSlides.map((slide) => (
           <SwiperSlide key={slide._id}>
             {slide.link ? (
-              slide.link.startsWith('/') ? (
+              slide.link.startsWith("/") ? (
                 <Link to={slide.link} className="block">
                   <img
                     src={slide.image}
-                    alt=""
+                    alt={
+                      slide.title || "Banner khuyến mãi từ Hiệu Sách Mỹ Hạnh"
+                    }
+                    loading="lazy"
                     className="w-full h-48 md:h-72 object-cover object-center"
                   />
                 </Link>
               ) : (
-                <a href={slide.link} target="_blank" rel="noopener noreferrer" className="block">
+                <a
+                  href={slide.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
                   <img
                     src={slide.image}
-                    alt=""
+                    alt={
+                      slide.title || "Banner khuyến mãi từ Hiệu Sách Mỹ Hạnh"
+                    }
+                    loading="lazy"
                     className="w-full h-48 md:h-72 object-cover object-center"
                   />
                 </a>
@@ -54,7 +65,8 @@ export default function SliderBanner() {
             ) : (
               <img
                 src={slide.image}
-                alt=""
+                alt={slide.title || "Banner khuyến mãi từ Hiệu Sách Mỹ Hạnh"}
+                loading="lazy"
                 className="w-full h-48 md:h-72 object-cover object-center"
               />
             )}

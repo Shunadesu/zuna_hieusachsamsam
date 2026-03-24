@@ -1,25 +1,32 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
-import { useApiStore } from '../store/apiStore';
-import { useCartStore } from '../store/cartStore';
-import { useToastStore } from '../store/toastStore';
-import BookGrid from '../components/BookGrid';
-import api from '../services/api';
-import Seo from '../components/Seo';
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import { useApiStore } from "../store/apiStore";
+import { useCartStore } from "../store/cartStore";
+import { useToastStore } from "../store/toastStore";
+import BookGrid from "../components/BookGrid";
+import api from "../services/api";
+import Seo from "../components/Seo";
 
 export default function BookDetailPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { bookDetail, promotions, fetchBookDetail, fetchPromotions, loading, error } = useApiStore();
+  const {
+    bookDetail,
+    promotions,
+    fetchBookDetail,
+    fetchPromotions,
+    loading,
+    error,
+  } = useApiStore();
   const addItem = useCartStore((s) => s.addItem);
   const clearCart = useCartStore((s) => s.clearCart);
   const showToast = useToastStore((s) => s.show);
   const [added, setAdded] = useState(false);
-  const [selectedImage, setSelectedImage] = useState('');
+  const [selectedImage, setSelectedImage] = useState("");
   const [similarBooks, setSimilarBooks] = useState([]);
   const [similarLoading, setSimilarLoading] = useState(false);
 
@@ -32,12 +39,16 @@ export default function BookDetailPage() {
   const activePromo = (promotions || []).find((p) => {
     const start = new Date(p.startDate);
     const end = new Date(p.endDate);
-    return now >= start && now <= end && (p.bookIds || []).some((b) => b._id === bookDetail?._id);
+    return (
+      now >= start &&
+      now <= end &&
+      (p.bookIds || []).some((b) => b._id === bookDetail?._id)
+    );
   });
 
   let displayPrice = Number(bookDetail?.price ?? 0);
   let originalPrice = null;
-  let promoLabel = '';
+  let promoLabel = "";
 
   if (bookDetail) {
     const baseOriginal = Number(bookDetail.originalPrice || 0);
@@ -50,23 +61,29 @@ export default function BookDetailPage() {
   if (activePromo && bookDetail) {
     const promoBasePrice = Number(bookDetail.price || 0);
     originalPrice = promoBasePrice;
-    if (activePromo.type === 'percent') {
+    if (activePromo.type === "percent") {
       displayPrice = Math.round(promoBasePrice * (1 - activePromo.value / 100));
       promoLabel = `Giảm ${activePromo.value}%`;
-    } else if (activePromo.type === 'fixed') {
+    } else if (activePromo.type === "fixed") {
       displayPrice = Math.max(0, promoBasePrice - activePromo.value);
-      promoLabel = `Giảm ${activePromo.value.toLocaleString('vi-VN')}₫`;
+      promoLabel = `Giảm ${activePromo.value.toLocaleString("vi-VN")}₫`;
     }
   }
 
-  const saving = originalPrice != null ? Math.max(0, originalPrice - displayPrice) : 0;
+  const saving =
+    originalPrice != null ? Math.max(0, originalPrice - displayPrice) : 0;
   const stockCount = Number(bookDetail?.quantity || 0);
-  const inStock = bookDetail?.status !== 'out_of_stock' && stockCount > 0;
-  const stockText = inStock ? `Còn ${stockCount} cuốn` : 'Tạm hết hàng';
+  const inStock = bookDetail?.status !== "out_of_stock" && stockCount > 0;
+  const stockText = inStock ? `Còn ${stockCount} cuốn` : "Tạm hết hàng";
   const allImages = Array.from(
-    new Set([...(Array.isArray(bookDetail?.images) ? bookDetail.images : []), bookDetail?.image].filter(Boolean))
+    new Set(
+      [
+        ...(Array.isArray(bookDetail?.images) ? bookDetail.images : []),
+        bookDetail?.image,
+      ].filter(Boolean),
+    ),
   );
-  const firstImage = allImages[0] || '';
+  const firstImage = allImages[0] || "";
 
   useEffect(() => {
     setSelectedImage(firstImage);
@@ -74,7 +91,9 @@ export default function BookDetailPage() {
 
   useEffect(() => {
     const categoryId =
-      typeof bookDetail?.categoryId === 'object' ? bookDetail?.categoryId?._id : bookDetail?.categoryId;
+      typeof bookDetail?.categoryId === "object"
+        ? bookDetail?.categoryId?._id
+        : bookDetail?.categoryId;
     if (!categoryId || !bookDetail?._id) {
       setSimilarBooks([]);
       return;
@@ -83,21 +102,30 @@ export default function BookDetailPage() {
     let cancelled = false;
     setSimilarLoading(true);
     api
-      .get('/api/books', { params: { categoryId, limit: 12, page: 1 } })
+      .get("/api/books", { params: { categoryId, limit: 12, page: 1 } })
       .then(({ data }) => {
         if (cancelled) return;
-        const API_ORIGIN = (import.meta.env.VITE_API_URL || 'https://hieusachsamsam.store').replace(/\/$/, '');
+        const API_ORIGIN = (
+          import.meta.env.VITE_API_URL || "https://hieusachsamsam.store"
+        ).replace(/\/$/, "");
         const toAbsoluteUrl = (value) => {
-          if (!value || typeof value !== 'string') return value;
-          if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:') || value.startsWith('blob:')) {
+          if (!value || typeof value !== "string") return value;
+          if (
+            value.startsWith("http://") ||
+            value.startsWith("https://") ||
+            value.startsWith("data:") ||
+            value.startsWith("blob:")
+          ) {
             return value;
           }
-          if (value.startsWith('/')) return `${API_ORIGIN}${value}`;
+          if (value.startsWith("/")) return `${API_ORIGIN}${value}`;
           return `${API_ORIGIN}/${value}`;
         };
         const normalizeBook = (book) => {
-          if (!book || typeof book !== 'object') return book;
-          const normalizedImages = Array.isArray(book.images) ? book.images.map((img) => toAbsoluteUrl(img)) : book.images;
+          if (!book || typeof book !== "object") return book;
+          const normalizedImages = Array.isArray(book.images)
+            ? book.images.map((img) => toAbsoluteUrl(img))
+            : book.images;
           return {
             ...book,
             image: toAbsoluteUrl(book.image),
@@ -105,7 +133,12 @@ export default function BookDetailPage() {
           };
         };
         const rows = data?.data || [];
-        setSimilarBooks(rows.filter((b) => b._id !== bookDetail._id).slice(0, 10).map(normalizeBook));
+        setSimilarBooks(
+          rows
+            .filter((b) => b._id !== bookDetail._id)
+            .slice(0, 10)
+            .map(normalizeBook),
+        );
       })
       .catch(() => {
         if (!cancelled) setSimilarBooks([]);
@@ -128,9 +161,9 @@ export default function BookDetailPage() {
         originalPrice: originalPrice || null,
         image: firstImage || bookDetail?.image,
       },
-      1
+      1,
     );
-    showToast('Đã thêm vào giỏ');
+    showToast("Đã thêm vào giỏ");
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -145,9 +178,9 @@ export default function BookDetailPage() {
         originalPrice: originalPrice || null,
         image: firstImage || bookDetail?.image,
       },
-      1
+      1,
     );
-    navigate('/thanh-toan');
+    navigate("/thanh-toan");
   };
 
   if (loading && !bookDetail) {
@@ -204,22 +237,30 @@ export default function BookDetailPage() {
   return (
     <div className="container mx-auto px-4 py-5 md:py-6">
       <Seo
-        title={bookDetail?.title || 'Chi tiết sách'}
+        title={bookDetail?.title || "Chi tiết sách"}
         description={
           bookDetail?.description
             ? String(bookDetail.description).slice(0, 160)
-            : `Chi tiết sách ${bookDetail?.title || ''} tại Sách Truyện Mỹ Hạnh.`
+            : `Chi tiết sách ${bookDetail?.title || ""} tại Sách Truyện Mỹ Hạnh.`
         }
+        image={bookDetail?.image}
       />
       <div className="text-sm text-gray-500 mb-3">
-        <Link to="/" className="hover:text-green-700">Trang chủ</Link>
+        <Link to="/" className="hover:text-green-700">
+          Trang chủ
+        </Link>
         <span className="mx-2">/</span>
-        <Link to="/sach" className="hover:text-green-700">Sách</Link>
+        <Link to="/sach" className="hover:text-green-700">
+          Sách
+        </Link>
         <span className="mx-2">/</span>
         <span className="text-gray-700">{bookDetail.title}</span>
       </div>
 
-      <Link to="/sach" className="text-green-800 text-sm mb-4 inline-block hover:underline">
+      <Link
+        to="/sach"
+        className="text-green-800 text-sm mb-4 inline-block hover:underline"
+      >
         ← Quay lại danh sách
       </Link>
 
@@ -230,27 +271,38 @@ export default function BookDetailPage() {
               <img
                 src={selectedImage || firstImage}
                 alt={bookDetail.title}
+                loading="lazy"
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-6xl">📖</div>
+              <div className="w-full h-full flex items-center justify-center text-6xl">
+                📖
+              </div>
             )}
           </div>
           {allImages.length > 1 && (
             <div className="mt-2.5">
-              <Swiper spaceBetween={8} slidesPerView={'auto'}>
+              <Swiper spaceBetween={8} slidesPerView={"auto"}>
                 {allImages.map((img, idx) => {
                   const active = (selectedImage || firstImage) === img;
                   return (
-                    <SwiperSlide key={`${img}-${idx}`} style={{ width: '74px' }}>
+                    <SwiperSlide
+                      key={`${img}-${idx}`}
+                      style={{ width: "74px" }}
+                    >
                       <button
                         type="button"
                         onClick={() => setSelectedImage(img)}
                         className={`w-[74px] h-[74px] overflow-hidden rounded-md border-2 ${
-                          active ? 'border-green-600' : 'border-gray-200'
+                          active ? "border-green-600" : "border-gray-200"
                         }`}
                       >
-                        <img src={img} alt={`${bookDetail.title} ${idx + 1}`} className="w-full h-full object-cover" />
+                        <img
+                          src={img}
+                          alt={`${bookDetail.title} ${idx + 1}`}
+                          loading="lazy"
+                          className="w-full h-full object-cover"
+                        />
                       </button>
                     </SwiperSlide>
                   );
@@ -275,33 +327,37 @@ export default function BookDetailPage() {
             <span
               className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
                 inStock
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                  : 'bg-gray-100 text-gray-600 border-gray-200'
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                  : "bg-gray-100 text-gray-600 border-gray-200"
               }`}
             >
               {stockText}
             </span>
           </div>
 
-          <h1 className="text-2xl md:text-[28px] font-bold text-gray-800 leading-tight">{bookDetail.title}</h1>
+          <h1 className="text-2xl md:text-[28px] font-bold text-gray-800 leading-tight">
+            {bookDetail.title}
+          </h1>
           {bookDetail.categoryId && (
-            <p className="text-gray-500 text-sm mt-1">Danh mục: {bookDetail.categoryId.name}</p>
+            <p className="text-gray-500 text-sm mt-1">
+              Danh mục: {bookDetail.categoryId.name}
+            </p>
           )}
 
           <div className="mt-4 p-3.5 rounded-lg bg-green-50/70 border border-green-100">
             <div className="flex items-end gap-3 flex-wrap">
               <span className="text-3xl font-bold text-green-800">
-                {displayPrice.toLocaleString('vi-VN')}₫
+                {displayPrice.toLocaleString("vi-VN")}₫
               </span>
               {originalPrice != null && (
                 <span className="text-gray-400 line-through text-lg">
-                  {originalPrice.toLocaleString('vi-VN')}₫
+                  {originalPrice.toLocaleString("vi-VN")}₫
                 </span>
               )}
             </div>
             {saving > 0 && (
               <p className="text-sm text-green-700 mt-1">
-                Tiết kiệm {saving.toLocaleString('vi-VN')}₫
+                Tiết kiệm {saving.toLocaleString("vi-VN")}₫
               </p>
             )}
           </div>
@@ -309,7 +365,9 @@ export default function BookDetailPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4 text-sm">
             <div className="rounded-lg border border-gray-200 px-3 py-2">
               <p className="text-gray-500">Tình trạng</p>
-              <p className="font-medium text-gray-800">{inStock ? 'Sẵn hàng' : 'Hết hàng'}</p>
+              <p className="font-medium text-gray-800">
+                {inStock ? "Sẵn hàng" : "Hết hàng"}
+              </p>
             </div>
             <div className="rounded-lg border border-gray-200 px-3 py-2">
               <p className="text-gray-500">Số lượng hiện có</p>
@@ -319,8 +377,12 @@ export default function BookDetailPage() {
 
           {bookDetail.description && (
             <div className="mt-6">
-              <h2 className="text-base font-semibold text-gray-800 mb-2">Mô tả sản phẩm</h2>
-              <div className="text-gray-600 whitespace-pre-wrap leading-relaxed">{bookDetail.description}</div>
+              <h2 className="text-base font-semibold text-gray-800 mb-2">
+                Mô tả sản phẩm
+              </h2>
+              <div className="text-gray-600 whitespace-pre-wrap leading-relaxed">
+                {bookDetail.description}
+              </div>
             </div>
           )}
 
@@ -331,7 +393,7 @@ export default function BookDetailPage() {
               disabled={!inStock}
               className="px-5 py-2.5 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
-              {added ? 'Đã thêm vào giỏ!' : 'Thêm vào giỏ'}
+              {added ? "Đã thêm vào giỏ!" : "Thêm vào giỏ"}
             </button>
             <button
               type="button"
@@ -372,7 +434,10 @@ export default function BookDetailPage() {
         {similarLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 animate-pulse">
             {Array.from({ length: 5 }).map((_, idx) => (
-              <div key={idx} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div
+                key={idx}
+                className="bg-white rounded-xl border border-gray-200 overflow-hidden"
+              >
                 <div className="aspect-[3/4] bg-gray-200" />
                 <div className="p-3">
                   <div className="h-4 bg-gray-200 rounded mb-2" />

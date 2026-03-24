@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 function BannerLink({ href, children, className }) {
   if (!href) return <div className={className}>{children}</div>;
-  if (href.startsWith('/')) {
+  if (href.startsWith("/")) {
     return (
       <Link to={href} className={className}>
         {children}
@@ -10,7 +10,12 @@ function BannerLink({ href, children, className }) {
     );
   }
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={className}
+    >
       {children}
     </a>
   );
@@ -28,15 +33,19 @@ export default function BelowSliderBanners({ sliders }) {
       {banners.slice(0, 6).map((b) => (
         <BannerLink
           key={b._id}
-          href={b.link || ''}
+          href={b.link || ""}
           className="bg-white rounded-xl border border-green-100 overflow-hidden transition block"
         >
           <div className="aspect-[12/6] bg-green-50">
-            <img src={b.image} alt="" className="w-full h-full object-cover" />
+            <img
+              src={b.image}
+              alt={b.title || "Banner Hiệu Sách Mỹ Hạnh"}
+              loading="lazy"
+              className="w-full h-full object-cover"
+            />
           </div>
         </BannerLink>
       ))}
     </div>
   );
 }
-

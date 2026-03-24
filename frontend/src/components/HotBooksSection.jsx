@@ -44,6 +44,7 @@ function HotBookCard({ book }) {
             <img
               src={book.image}
               alt={book.title}
+              loading="lazy"
               className="w-full h-full object-cover"
             />
           ) : (
@@ -127,7 +128,7 @@ export default function HotBooksSection({ books = [] }) {
         <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
           <img
             src={FLASHSALE_HOT_ICON}
-            alt=""
+            alt="Khuyến mãi giảm sốc"
             width={33}
             height={15}
             className="h-5 w-auto sm:h-6 object-contain shrink-0 drop-shadow-sm"

@@ -1,9 +1,10 @@
-import { Link } from 'react-router-dom';
-import { useCartStore } from '../store/cartStore';
-import Seo from '../components/Seo';
+import { Link } from "react-router-dom";
+import { useCartStore } from "../store/cartStore";
+import Seo from "../components/Seo";
 
 export default function CartPage() {
-  const { cartItems, updateQuantity, removeItem, getTotalPrice } = useCartStore();
+  const { cartItems, updateQuantity, removeItem, getTotalPrice } =
+    useCartStore();
   const total = getTotalPrice();
 
   return (
@@ -16,7 +17,10 @@ export default function CartPage() {
       {cartItems.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500 mb-4">Giỏ hàng trống.</p>
-          <Link to="/sach" className="text-green-800 font-medium hover:underline">
+          <Link
+            to="/sach"
+            className="text-green-800 font-medium hover:underline"
+          >
             Mua sắm ngay →
           </Link>
         </div>
@@ -34,33 +38,54 @@ export default function CartPage() {
                 </tr>
               </thead>
               <tbody>
-                {cartItems.map((item) => (
+                {cartItems.map((item) =>
                   (() => {
-                    const hasDiscount = Number(item.originalPrice || 0) > Number(item.price || 0);
+                    const hasDiscount =
+                      Number(item.originalPrice || 0) > Number(item.price || 0);
                     const discountPercent = hasDiscount
-                      ? Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)
+                      ? Math.round(
+                          ((item.originalPrice - item.price) /
+                            item.originalPrice) *
+                            100,
+                        )
                       : null;
                     return (
-                      <tr key={item.bookId} className="border-b border-green-50">
+                      <tr
+                        key={item.bookId}
+                        className="border-b border-green-50"
+                      >
                         <td className="py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-16 h-20 bg-green-50 rounded overflow-hidden shrink-0">
                               {item.image ? (
-                                <img src={item.image} alt="" className="w-full h-full object-cover" />
+                                <img
+                                  src={item.image}
+                                  alt={item.title || "Ảnh sách"}
+                                  loading="lazy"
+                                  className="w-full h-full object-cover"
+                                />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-2xl">📖</div>
+                                <div className="w-full h-full flex items-center justify-center text-2xl">
+                                  📖
+                                </div>
                               )}
                             </div>
-                            <span className="font-medium text-gray-800">{item.title}</span>
+                            <span className="font-medium text-gray-800">
+                              {item.title}
+                            </span>
                           </div>
                         </td>
                         <td className="py-4">
                           <div className="text-green-800 font-medium">
-                            {item.price.toLocaleString('vi-VN')}₫
+                            {item.price.toLocaleString("vi-VN")}₫
                           </div>
                           <div className="mt-0.5 flex items-center gap-1.5 min-h-[18px]">
-                            <span className={`text-xs line-through ${hasDiscount ? 'text-gray-400' : 'text-transparent'}`}>
-                              {hasDiscount ? `${Number(item.originalPrice).toLocaleString('vi-VN')}₫` : '0₫'}
+                            <span
+                              className={`text-xs line-through ${hasDiscount ? "text-gray-400" : "text-transparent"}`}
+                            >
+                              {hasDiscount
+                                ? `${Number(item.originalPrice).toLocaleString("vi-VN")}₫`
+                                : "0₫"}
                             </span>
                             {discountPercent ? (
                               <span className="inline-flex items-center px-1 py-0.5 rounded bg-red-50 text-red-600 text-[10px] font-semibold border border-red-100">
@@ -77,15 +102,21 @@ export default function CartPage() {
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
-                              onClick={() => updateQuantity(item.bookId, item.quantity - 1)}
+                              onClick={() =>
+                                updateQuantity(item.bookId, item.quantity - 1)
+                              }
                               className="w-8 h-8 rounded border border-green-200 text-green-800 hover:bg-green-50"
                             >
                               −
                             </button>
-                            <span className="w-10 text-center">{item.quantity}</span>
+                            <span className="w-10 text-center">
+                              {item.quantity}
+                            </span>
                             <button
                               type="button"
-                              onClick={() => updateQuantity(item.bookId, item.quantity + 1)}
+                              onClick={() =>
+                                updateQuantity(item.bookId, item.quantity + 1)
+                              }
                               className="w-8 h-8 rounded border border-green-200 text-green-800 hover:bg-green-50"
                             >
                               +
@@ -93,7 +124,8 @@ export default function CartPage() {
                           </div>
                         </td>
                         <td className="py-4 font-medium">
-                          {(item.price * item.quantity).toLocaleString('vi-VN')}₫
+                          {(item.price * item.quantity).toLocaleString("vi-VN")}
+                          ₫
                         </td>
                         <td className="py-4">
                           <button
@@ -106,18 +138,21 @@ export default function CartPage() {
                         </td>
                       </tr>
                     );
-                  })()
-                ))}
+                  })(),
+                )}
               </tbody>
             </table>
           </div>
           <div className="mt-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <Link to="/sach" className="text-green-800 font-medium hover:underline">
+            <Link
+              to="/sach"
+              className="text-green-800 font-medium hover:underline"
+            >
               ← Tiếp tục mua sắm
             </Link>
             <div className="flex items-center gap-6">
               <p className="text-xl font-bold text-green-900">
-                Tổng tiền: {total.toLocaleString('vi-VN')}₫
+                Tổng tiền: {total.toLocaleString("vi-VN")}₫
               </p>
               <Link
                 to="/thanh-toan"
