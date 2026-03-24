@@ -1,5 +1,6 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { bookPathSlug } from "../utils/slugify";
 
 export const useCartStore = create(
   persist(
@@ -8,11 +9,13 @@ export const useCartStore = create(
 
       addItem: (book, quantity = 1) => {
         const normalizedOriginalPrice =
-          Number(book.originalPrice || 0) > Number(book.price || 0) ? Number(book.originalPrice) : null;
+          Number(book.originalPrice || 0) > Number(book.price || 0)
+            ? Number(book.originalPrice)
+            : null;
         const item = {
           bookId: book._id,
           title: book.title,
-          slug: book.slug,
+          slug: bookPathSlug(book),
           price: Number(book.price || 0),
           originalPrice: normalizedOriginalPrice,
           quantity,
@@ -30,7 +33,7 @@ export const useCartStore = create(
                     price: Number(book.price || i.price || 0),
                     originalPrice: normalizedOriginalPrice,
                   }
-                : i
+                : i,
             );
           } else {
             next = [...state.cartItems, item];
@@ -52,7 +55,7 @@ export const useCartStore = create(
         }
         set((state) => ({
           cartItems: state.cartItems.map((i) =>
-            i.bookId === bookId ? { ...i, quantity } : i
+            i.bookId === bookId ? { ...i, quantity } : i,
           ),
         }));
       },
@@ -62,6 +65,6 @@ export const useCartStore = create(
       getTotalPrice: () =>
         get().cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0),
     }),
-    { name: 'cart-storage' }
-  )
+    { name: "cart-storage" },
+  ),
 );

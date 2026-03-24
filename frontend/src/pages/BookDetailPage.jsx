@@ -359,9 +359,9 @@ export default function BookDetailPage() {
       <section className="mt-10">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-green-800">Sách tương tự</h2>
-          {bookDetail.categoryId?._id && (
+          {bookDetail.categoryId?.slug && (
             <Link
-              to={`/sach?categoryId=${bookDetail.categoryId._id}`}
+              to={`/sach?category=${bookDetail.categoryId.slug}`}
               className="text-sm text-green-800 hover:text-green-700 font-medium"
             >
               Xem thêm →

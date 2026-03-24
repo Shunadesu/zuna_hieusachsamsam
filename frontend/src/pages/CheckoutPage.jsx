@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
+import { useApiStore } from '../store/apiStore';
 import QRPayment from '../components/QRPayment';
 import Seo from '../components/Seo';
 
@@ -10,7 +11,7 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { cartItems, getTotalPrice, clearCart, updateQuantity, removeItem } = useCartStore();
-  const [bankAccounts, setBankAccounts] = useState([]);
+  const { bankAccounts, fetchBankAccounts } = useApiStore();
   const [guestInfo, setGuestInfo] = useState({ name: '', phone: '', email: '', address: '' });
   const [orderCreated, setOrderCreated] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -22,8 +23,8 @@ export default function CheckoutPage() {
   const total = subtotal + shippingFee;
 
   useEffect(() => {
-    api.get('/api/bank-accounts').then((res) => setBankAccounts(res.data || [])).catch(() => {});
-  }, []);
+    fetchBankAccounts().catch(() => {});
+  }, [fetchBankAccounts]);
 
   useEffect(() => {
     if (user) {

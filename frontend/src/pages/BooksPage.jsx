@@ -9,15 +9,21 @@ const LIMIT = 12;
 
 export default function BooksPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { books, categories, promotions, fetchBooks, fetchCategories, fetchPromotions, loading } =
+    useApiStore();
+
   const page = Number(searchParams.get('page')) || 1;
   const search = searchParams.get('search') || '';
-  const categoryId = searchParams.get('categoryId') || '';
+  const categorySlug = searchParams.get('category') || '';
+  const categoryId = (() => {
+    if (!categorySlug || !categories.length) return '';
+    const found = categories.find((c) => c.slug === categorySlug);
+    return found ? found._id : '';
+  })();
   const minPrice = searchParams.get('minPrice') || '';
   const maxPrice = searchParams.get('maxPrice') || '';
 
   const [total, setTotal] = useState(0);
-  const { books, categories, promotions, fetchBooks, fetchCategories, fetchPromotions, loading } =
-    useApiStore();
 
   useEffect(() => {
     fetchCategories().catch(() => {});
@@ -36,7 +42,7 @@ export default function BooksPage() {
     fetchBooks(params)
       .then((res) => setTotal(res?.total ?? 0))
       .catch(() => setTotal(0));
-  }, [page, search, categoryId, minPrice, maxPrice, fetchBooks]);
+  }, [page, search, categoryId, minPrice, maxPrice, fetchBooks, categories]);
 
   const totalPages = Math.ceil(total / LIMIT) || 1;
 
@@ -83,12 +89,12 @@ export default function BooksPage() {
         <div className="w-full lg:w-72 shrink-0">
           <BooksFilterSidebar
             search={search}
-            categoryId={categoryId}
+            categorySlug={categorySlug}
             minPrice={minPrice}
             maxPrice={maxPrice}
             categories={categories || []}
             onSearch={handleSearch}
-            onCategoryChange={(v) => handleFilter('categoryId', v)}
+            onCategoryChange={(v) => handleFilter('category', v)}
             onPriceRangeChange={handlePriceRange}
           />
         </div>

@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import { FaShoppingCart, FaBolt } from 'react-icons/fa';
-import { useCartStore } from '../store/cartStore';
-import { useToastStore } from '../store/toastStore';
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { FaShoppingCart, FaBolt } from "react-icons/fa";
+import { useCartStore } from "../store/cartStore";
+import { useToastStore } from "../store/toastStore";
+import { bookPathSlug } from "../utils/slugify";
 
 export default function BookCard({ book, originalPrice, discountPrice }) {
   const navigate = useNavigate();
@@ -14,24 +15,32 @@ export default function BookCard({ book, originalPrice, discountPrice }) {
   const discountPercent = hasDiscount
     ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100)
     : null;
-  const pricingBook = { ...book, price: displayPrice, originalPrice: hasDiscount ? originalPrice : null };
+  const pricingBook = {
+    ...book,
+    price: displayPrice,
+    originalPrice: hasDiscount ? originalPrice : null,
+  };
 
   const handleAddToCart = (e) => {
     e.preventDefault();
     addItem(pricingBook, 1);
-    showToast('Đã thêm vào giỏ');
+    showToast("Đã thêm vào giỏ");
   };
 
   const handleBuyNow = (e) => {
     e.preventDefault();
     clearCart();
     addItem(pricingBook, 1);
-    navigate('/thanh-toan');
+    navigate("/thanh-toan");
   };
 
   return (
     <div className="bg-white rounded-xl border border-green-100 shadow-sm overflow-hidden hover:shadow-md transition flex flex-col">
-      <Link to={`/sach/${book.slug}`} className="block flex-1 min-w-0" title={book.title}>
+      <Link
+        to={`/sach/${bookPathSlug(book)}`}
+        className="block flex-1 min-w-0"
+        title={book.title}
+      >
         <div className="aspect-[3/4] bg-green-50 overflow-hidden">
           {book.image ? (
             <img
@@ -46,14 +55,20 @@ export default function BookCard({ book, originalPrice, discountPrice }) {
           )}
         </div>
         <div className="p-3 flex-1 flex flex-col">
-          <h3 className="text-base font-semibold text-green-800 line-clamp-1 min-w-0">{book.title}</h3>
+          <h3 className="text-base font-semibold text-green-800 line-clamp-1 min-w-0">
+            {book.title}
+          </h3>
           <div className="mt-2 min-h-[44px]">
             <span className="text-green-800 font-bold block">
-              {displayPrice.toLocaleString('vi-VN')}₫
+              {displayPrice.toLocaleString("vi-VN")}₫
             </span>
             <div className="mt-0.5 flex items-center gap-2">
-              <span className={`text-sm line-through ${hasDiscount ? 'text-gray-400' : 'text-transparent'}`}>
-                {hasDiscount ? `${originalPrice?.toLocaleString('vi-VN')}₫` : '0₫'}
+              <span
+                className={`text-sm line-through ${hasDiscount ? "text-gray-400" : "text-transparent"}`}
+              >
+                {hasDiscount
+                  ? `${originalPrice?.toLocaleString("vi-VN")}₫`
+                  : "0₫"}
               </span>
               {discountPercent ? (
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-red-50 text-red-600 text-xs font-semibold border border-red-100">
@@ -75,7 +90,10 @@ export default function BookCard({ book, originalPrice, discountPrice }) {
           aria-label="Thêm vào giỏ"
           className="w-full py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition flex items-center justify-center gap-1.5"
         >
-          <FaShoppingCart className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0" aria-hidden />
+          <FaShoppingCart
+            className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0"
+            aria-hidden
+          />
           <span className="hidden md:inline">Thêm giỏ</span>
         </button>
         <button
@@ -84,7 +102,10 @@ export default function BookCard({ book, originalPrice, discountPrice }) {
           aria-label="Mua ngay"
           className="w-full py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition flex items-center justify-center gap-1.5"
         >
-          <FaBolt className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0" aria-hidden />
+          <FaBolt
+            className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0"
+            aria-hidden
+          />
           <span className="hidden md:inline">Mua ngay</span>
         </button>
       </div>

@@ -17,7 +17,7 @@ function matchPriceBucket(minPrice, maxPrice) {
 
 export default function BooksFilterSidebar({
   search,
-  categoryId,
+  categorySlug,
   minPrice,
   maxPrice,
   categories = [],
@@ -54,13 +54,13 @@ export default function BooksFilterSidebar({
           </label>
           <select
             id="books-category"
-            value={categoryId}
+            value={categorySlug}
             onChange={(e) => onCategoryChange(e.target.value)}
             className="w-full rounded-lg border border-green-200 bg-white px-3 py-2.5 text-sm text-gray-800 focus:border-green-600 focus:ring-1 focus:ring-green-600 outline-none"
           >
             <option value="">Tất cả danh mục</option>
             {categories.map((c) => (
-              <option key={c._id} value={c._id}>
+              <option key={c._id} value={c.slug || c._id}>
                 {c.name}
               </option>
             ))}

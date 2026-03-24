@@ -1,14 +1,15 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay } from 'swiper/modules';
-import { FaShoppingCart, FaBolt } from 'react-icons/fa';
-import { useCartStore } from '../store/cartStore';
-import { useToastStore } from '../store/toastStore';
-import 'swiper/css';
-import 'swiper/css/navigation';
+import { Link, useNavigate } from "react-router-dom";
+import { bookPathSlug } from "../utils/slugify";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay } from "swiper/modules";
+import { FaShoppingCart, FaBolt } from "react-icons/fa";
+import { useCartStore } from "../store/cartStore";
+import { useToastStore } from "../store/toastStore";
+import "swiper/css";
+import "swiper/css/navigation";
 
 const FLASHSALE_HOT_ICON =
-  'https://bizweb.dktcdn.net/100/496/744/themes/922464/assets/flashsale-hot.png?1746670709210';
+  "https://bizweb.dktcdn.net/100/496/744/themes/922464/assets/flashsale-hot.png?1746670709210";
 
 function calcDiscountPercent(book) {
   const original = Number(book.originalPrice || 0);
@@ -26,29 +27,35 @@ function HotBookCard({ book }) {
 
   const handleAddToCart = () => {
     addItem(book, 1);
-    showToast('Đã thêm vào giỏ');
+    showToast("Đã thêm vào giỏ");
   };
 
   const handleBuyNow = () => {
     clearCart();
     addItem(book, 1);
-    navigate('/thanh-toan');
+    navigate("/thanh-toan");
   };
 
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden h-full flex flex-col">
-      <Link to={`/sach/${book.slug}`} className="block shrink-0">
+      <Link to={`/sach/${bookPathSlug(book)}`} className="block shrink-0">
         <div className="aspect-[3/4] bg-green-50">
           {book.image ? (
-            <img src={book.image} alt={book.title} className="w-full h-full object-cover" />
+            <img
+              src={book.image}
+              alt={book.title}
+              className="w-full h-full object-cover"
+            />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-3xl text-green-700">📚</div>
+            <div className="w-full h-full flex items-center justify-center text-3xl text-green-700">
+              📚
+            </div>
           )}
         </div>
       </Link>
       <div className="p-2 sm:p-3 flex-1 flex flex-col min-h-0">
         <Link
-          to={`/sach/${book.slug}`}
+          to={`/sach/${bookPathSlug(book)}`}
           className="block text-sm text-gray-800 line-clamp-1 min-w-0 hover:text-green-800"
           title={book.title}
         >
@@ -58,7 +65,7 @@ function HotBookCard({ book }) {
         <div className="mt-2 shrink-0 space-y-1">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <span className="text-green-700 font-bold text-sm sm:text-base">
-              {Number(book.price).toLocaleString('vi-VN')}₫
+              {Number(book.price).toLocaleString("vi-VN")}₫
             </span>
             {discount != null ? (
               <span className="text-xs px-2 py-0.5 rounded bg-green-100 text-green-700 font-medium shrink-0">
@@ -68,7 +75,7 @@ function HotBookCard({ book }) {
           </div>
           {book.originalPrice ? (
             <div className="text-gray-400 text-xs sm:text-sm line-through">
-              {Number(book.originalPrice).toLocaleString('vi-VN')}₫
+              {Number(book.originalPrice).toLocaleString("vi-VN")}₫
             </div>
           ) : null}
         </div>
@@ -80,7 +87,10 @@ function HotBookCard({ book }) {
             aria-label="Thêm vào giỏ"
             className="w-full py-2 sm:py-2 rounded-md sm:rounded-lg bg-green-600 text-white text-xs sm:text-sm font-medium hover:bg-green-700 transition flex items-center justify-center gap-1.5"
           >
-            <FaShoppingCart className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0" aria-hidden />
+            <FaShoppingCart
+              className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0"
+              aria-hidden
+            />
             <span className="hidden md:inline">Thêm vào giỏ</span>
           </button>
           <button
@@ -89,7 +99,10 @@ function HotBookCard({ book }) {
             aria-label="Mua ngay"
             className="w-full py-2 sm:py-2 rounded-md sm:rounded-lg bg-amber-500 text-white text-xs sm:text-sm font-medium hover:bg-amber-600 transition flex items-center justify-center gap-1.5"
           >
-            <FaBolt className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0" aria-hidden />
+            <FaBolt
+              className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0"
+              aria-hidden
+            />
             <span className="hidden md:inline">Mua ngay</span>
           </button>
         </div>
@@ -121,7 +134,9 @@ export default function HotBooksSection({ books = [] }) {
             loading="lazy"
             decoding="async"
           />
-          <h2 className="text-white font-bold text-lg sm:text-xl tracking-tight">GIẢM SỐC</h2>
+          <h2 className="text-white font-bold text-lg sm:text-xl tracking-tight">
+            GIẢM SỐC
+          </h2>
         </div>
       </div>
 
