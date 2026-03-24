@@ -86,8 +86,26 @@ export default function BookDetailPage() {
       .get('/api/books', { params: { categoryId, limit: 12, page: 1 } })
       .then(({ data }) => {
         if (cancelled) return;
+        const API_ORIGIN = (import.meta.env.VITE_API_URL || 'https://hieusachsamsam.store').replace(/\/$/, '');
+        const toAbsoluteUrl = (value) => {
+          if (!value || typeof value !== 'string') return value;
+          if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:') || value.startsWith('blob:')) {
+            return value;
+          }
+          if (value.startsWith('/')) return `${API_ORIGIN}${value}`;
+          return `${API_ORIGIN}/${value}`;
+        };
+        const normalizeBook = (book) => {
+          if (!book || typeof book !== 'object') return book;
+          const normalizedImages = Array.isArray(book.images) ? book.images.map((img) => toAbsoluteUrl(img)) : book.images;
+          return {
+            ...book,
+            image: toAbsoluteUrl(book.image),
+            images: normalizedImages,
+          };
+        };
         const rows = data?.data || [];
-        setSimilarBooks(rows.filter((b) => b._id !== bookDetail._id).slice(0, 10));
+        setSimilarBooks(rows.filter((b) => b._id !== bookDetail._id).slice(0, 10).map(normalizeBook));
       })
       .catch(() => {
         if (!cancelled) setSimilarBooks([]);
