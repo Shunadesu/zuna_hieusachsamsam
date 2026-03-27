@@ -1,25 +1,64 @@
 import { Helmet } from "react-helmet-async";
+import { useLocation } from "react-router-dom";
 
 const SITE_NAME = "Sách Truyện Mỹ Hạnh";
-const BASE_URL = "https://hieusachsamsam.store";
+
+const SITE_URL = (
+  import.meta.env.VITE_SITE_URL || "https://www.hieusachmyhanh.com"
+).replace(/\/$/, "");
+
+const API_ORIGIN = (
+  import.meta.env.VITE_API_URL || "https://hieusachsamsam.store"
+).replace(/\/$/, "");
+
 const DEFAULT_DESCRIPTION =
-  "Sách Truyện Mỹ Hạnh - mua bán sách truyện cũ toàn quốc, nhiều đầu sách chất lượng và ưu đãi hấp dẫn.";
-const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`;
+  "Sách Truyện Mỹ Hạnh - thu mua, bán sách truyện cũ toàn quốc với nhiều danh mục và ưu đãi mỗi ngày.";
+
+const DEFAULT_KEYWORDS =
+  "mua bán sách cũ, sách truyện cũ, sách xưa trước 1975, nhạc tờ cổ, truyện tranh 199x, truyện tuổi thơ, truyện tranh nam nữ, truyện lẻ truyện bộ, nhà sách Gò Vấp, Sách Truyện Mỹ Hạnh";
+
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
+
+const ROBOTS_CONTENT =
+  "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
+
+function toAbsoluteImageUrl(value) {
+  if (!value || typeof value !== "string") return null;
+  if (
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("data:") ||
+    value.startsWith("blob:")
+  ) {
+    return value;
+  }
+  if (value.startsWith("/")) return `${API_ORIGIN}${value}`;
+  return `${API_ORIGIN}/${value}`;
+}
 
 export default function Seo({
   title,
   description = DEFAULT_DESCRIPTION,
   image,
+  keywords = DEFAULT_KEYWORDS,
+  canonicalPath,
 }) {
+  const location = useLocation();
   const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
-  const ogImage = image || DEFAULT_OG_IMAGE;
+  const path = canonicalPath ?? location.pathname;
+  const canonicalUrl = `${SITE_URL}${path === "/" ? "" : path}`;
+  const ogImage = toAbsoluteImageUrl(image) || DEFAULT_OG_IMAGE;
 
   return (
     <Helmet>
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
+      <meta name="keywords" content={keywords} />
+      <meta name="robots" content={ROBOTS_CONTENT} />
+      <link rel="canonical" href={canonicalUrl} />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
+      <meta property="og:url" content={canonicalUrl} />
       <meta property="og:image" content={ogImage} />
       <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:type" content="website" />

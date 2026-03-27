@@ -164,7 +164,7 @@ export default function HomePage() {
   return (
     <div className="container mx-auto px-4 py-6">
       <Seo
-        title="Trang chủ"
+        title="Mua bán sách cũ, truyện tranh xưa 199x, sách trước 1975"
         description="Sách Truyện Mỹ Hạnh - thu mua, bán sách truyện cũ toàn quốc với nhiều danh mục và ưu đãi mỗi ngày."
       />
       <section className="mb-8">
