@@ -42,12 +42,54 @@ export default function Seo({
   image,
   keywords = DEFAULT_KEYWORDS,
   canonicalPath,
+  book,
 }) {
   const location = useLocation();
   const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
   const path = canonicalPath ?? location.pathname;
   const canonicalUrl = `${SITE_URL}${path === "/" ? "" : path}`;
   const ogImage = toAbsoluteImageUrl(image) || DEFAULT_OG_IMAGE;
+
+  const schemas = [];
+
+  if (book) {
+    const bookImages = (book.images || []).map((img) => ({
+      "@type": "ImageObject",
+      url: toAbsoluteImageUrl(img),
+    }));
+    if (book.image) {
+      bookImages.unshift({
+        "@type": "ImageObject",
+        url: toAbsoluteImageUrl(book.image),
+      });
+    }
+
+    const offers = {
+      "@type": "Offer",
+      price: Number(book.price ?? 0).toFixed(0),
+      priceCurrency: "VND",
+      availability: book.status === "out_of_stock"
+        ? "https://schema.org/OutOfStock"
+        : "https://schema.org/InStock",
+      url: canonicalUrl,
+    };
+
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "Book",
+      name: book.title,
+      description: book.description || description,
+      url: canonicalUrl,
+      image: bookImages,
+      offers,
+      ...(book.categoryId?.name && {
+        about: {
+          "@type": "Thing",
+          name: book.categoryId.name,
+        },
+      }),
+    });
+  }
 
   return (
     <Helmet>
@@ -61,11 +103,22 @@ export default function Seo({
       <meta property="og:url" content={canonicalUrl} />
       <meta property="og:image" content={ogImage} />
       <meta property="og:site_name" content={SITE_NAME} />
-      <meta property="og:type" content="website" />
+      <meta property="og:type" content={book ? "product" : "website"} />
+      {book && (
+        <>
+          <meta property="product:price:amount" content={Number(book.price ?? 0).toFixed(0)} />
+          <meta property="product:price:currency" content="VND" />
+        </>
+      )}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={ogImage} />
+      {schemas.length > 0 && (
+        <script type="application/ld+json">
+          {JSON.stringify(schemas.length === 1 ? schemas[0] : schemas)}
+        </script>
+      )}
     </Helmet>
   );
 }

@@ -244,6 +244,7 @@ export default function BookDetailPage() {
             : `Chi tiết sách ${bookDetail?.title || ""} tại Sách Truyện Mỹ Hạnh.`
         }
         image={bookDetail?.image}
+        book={bookDetail}
       />
       <div className="text-sm text-gray-500 mb-3">
         <Link to="/" className="hover:text-green-700">

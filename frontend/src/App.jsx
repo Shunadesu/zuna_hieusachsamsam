@@ -19,6 +19,7 @@ import ContactPage from './pages/ContactPage';
 import OnlinePurchaseGuidePage from './pages/OnlinePurchaseGuidePage';
 import SellBookGuidePage from './pages/SellBookGuidePage';
 import FaqPage from './pages/FaqPage';
+import SeoStatsPage from './pages/SeoStatsPage';
 
 function AppInner() {
   const [loginOpen, setLoginOpen] = useState(false);
@@ -60,6 +61,7 @@ function AppInner() {
           <Route path="huong-dan-mua-hang-online" element={<OnlinePurchaseGuidePage />} />
           <Route path="huong-dan-thanh-ly-sach" element={<SellBookGuidePage />} />
           <Route path="cau-hoi-thuong-gap" element={<FaqPage />} />
+          <Route path="seo-stats" element={<SeoStatsPage />} />
         </Route>
       </Routes>
       <LoginSidebar open={loginOpen} onClose={() => setLoginOpen(false)} />
