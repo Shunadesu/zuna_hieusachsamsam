@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../services/api';
+import api, { requestUpload } from '../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://hieusachsamsam.store';
 const inputCls = 'px-2 py-1.5 rounded border border-gray-300 text-sm';
@@ -23,7 +23,7 @@ export default function BankAccounts() {
       setForm({ bankName: '', accountNumber: '', accountHolder: '', qrImage: '' });
       setModalOpen(false);
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 
@@ -33,7 +33,7 @@ export default function BankAccounts() {
       await api.delete('/api/bank-accounts/' + id);
       setList((prev) => prev.filter((b) => b._id !== id));
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 
@@ -42,21 +42,14 @@ export default function BankAccounts() {
     if (!file) return;
     setUploading(true);
     try {
-      const token = localStorage.getItem('adminToken');
       const fd = new FormData();
       fd.append('images', file);
-      const res = await fetch(`${API_URL}/api/books/upload`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        body: fd,
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || 'Upload ảnh QR thất bại');
+      const data = await requestUpload('/api/books/upload', fd);
       const url = data?.urls?.[0] || '';
       if (!url) throw new Error('Không nhận được URL ảnh từ server');
       setForm((prev) => ({ ...prev, qrImage: url }));
     } catch (err) {
-      alert(err.message || 'Upload ảnh QR thất bại');
+      if (!err?.silentAuthRedirect) alert(err.message || 'Upload ảnh QR thất bại');
     } finally {
       setUploading(false);
       e.target.value = '';

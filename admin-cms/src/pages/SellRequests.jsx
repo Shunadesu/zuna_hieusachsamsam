@@ -13,7 +13,7 @@ export default function SellRequests() {
       await api.patch(`/api/sell-requests/${id}`, { status });
       setList((prev) => prev.map((r) => (r._id === id ? { ...r, status } : r)));
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 

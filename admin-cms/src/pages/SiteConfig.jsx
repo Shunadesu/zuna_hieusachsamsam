@@ -51,7 +51,7 @@ export default function SiteConfig() {
       fetchConfig();
       alert('Đã lưu cấu hình.');
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 

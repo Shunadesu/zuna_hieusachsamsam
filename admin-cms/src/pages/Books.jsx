@@ -61,7 +61,7 @@ export default function Books() {
         maxQuantity: filters.maxQuantity === '' ? undefined : filters.maxQuantity,
       });
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 
@@ -80,7 +80,7 @@ export default function Books() {
         maxQuantity: filters.maxQuantity === '' ? undefined : filters.maxQuantity,
       });
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 

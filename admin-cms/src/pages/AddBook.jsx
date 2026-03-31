@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCategoryStore } from '../store/useCategoryStore';
 import { useBookStore } from '../store/useBookStore';
-import api from '../services/api';
+import api, { requestUpload } from '../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://hieusachsamsam.store';
 
@@ -55,7 +55,7 @@ export default function AddBook() {
         });
       })
       .catch((err) => {
-        if (!cancelled) alert(err.message);
+        if (!cancelled && !err?.silentAuthRedirect) alert(err.message);
       })
       .finally(() => {
         if (!cancelled) setLoadBook(false);
@@ -82,21 +82,14 @@ export default function AddBook() {
     try {
       const formData = new FormData();
       files.forEach((file) => formData.append('images', file));
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch(`${API_URL}/api/books/upload`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Upload thất bại');
+      const data = await requestUpload('/api/books/upload', formData);
       const urls = Array.isArray(data.urls) ? data.urls : [];
       if (urls.length) {
         setImages((arr) => [...arr.filter((u) => u.trim() !== ''), ...urls]);
       }
       e.target.value = '';
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     } finally {
       setUploading(false);
     }
@@ -125,7 +118,7 @@ export default function AddBook() {
       invalidate();
       navigate('/books');
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     } finally {
       setLoading(false);
     }

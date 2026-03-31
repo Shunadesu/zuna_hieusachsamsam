@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../services/api';
+import api, { requestUpload } from '../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://hieusachsamsam.store';
 const inputCls = 'px-2 py-1.5 rounded border border-gray-300 text-sm';
@@ -29,7 +29,7 @@ export default function Sliders() {
       setBelowSlider(false);
       setModalOpen(false);
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 
@@ -40,16 +40,7 @@ export default function Sliders() {
     try {
       const fd = new FormData();
       fd.append('images', file);
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch(`${API_URL}/api/books/upload`, {
-        method: 'POST',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: fd,
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || res.statusText);
+      const data = await requestUpload('/api/books/upload', fd);
       const url = data?.urls?.[0];
       if (url) {
         setForm((f) => ({ ...f, image: url }));
@@ -57,7 +48,7 @@ export default function Sliders() {
         alert('Không nhận được URL ảnh từ server.');
       }
     } catch (err) {
-      alert(err.message || 'Upload ảnh thất bại.');
+      if (!err?.silentAuthRedirect) alert(err.message || 'Upload ảnh thất bại.');
     } finally {
       setUploading(false);
       // cho phép chọn lại cùng file nếu cần
@@ -71,7 +62,7 @@ export default function Sliders() {
       await api.delete(`/api/sliders/${id}`);
       setList((prev) => prev.filter((s) => s._id !== id));
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 

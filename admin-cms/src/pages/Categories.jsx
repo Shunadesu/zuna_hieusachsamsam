@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useCategoryStore } from '../store/useCategoryStore';
-import api from '../services/api';
+import api, { requestUpload } from '../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://hieusachsamsam.store';
 
@@ -51,18 +51,9 @@ export default function Categories() {
     if (!file) return '';
     setUploading(true);
     try {
-      const token = localStorage.getItem('adminToken');
       const fd = new FormData();
       fd.append('images', file);
-      const res = await fetch(`${API_URL}/api/books/upload`, {
-        method: 'POST',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: fd,
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || 'Upload ảnh thất bại');
+      const data = await requestUpload('/api/books/upload', fd);
       return data?.urls?.[0] || '';
     } finally {
       setUploading(false);
@@ -81,7 +72,7 @@ export default function Categories() {
       if (url) setImage(url);
       else alert('Không nhận được URL ảnh từ server.');
     } catch (err) {
-      alert(err.message || 'Upload ảnh thất bại.');
+      if (!err?.silentAuthRedirect) alert(err.message || 'Upload ảnh thất bại.');
     } finally {
       e.target.value = '';
     }
@@ -99,7 +90,7 @@ export default function Categories() {
       if (url) setEditForm((prev) => ({ ...prev, image: url }));
       else alert('Không nhận được URL ảnh từ server.');
     } catch (err) {
-      alert(err.message || 'Upload ảnh thất bại.');
+      if (!err?.silentAuthRedirect) alert(err.message || 'Upload ảnh thất bại.');
     } finally {
       e.target.value = '';
     }
@@ -125,7 +116,7 @@ export default function Categories() {
       }
       setModalOpen(false);
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 
@@ -163,7 +154,7 @@ export default function Categories() {
         editObjectUrlRef.current = '';
       }
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 
@@ -173,7 +164,7 @@ export default function Categories() {
       await api.delete(`/api/categories/${id}`);
       await reloadCategories();
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 
@@ -182,7 +173,7 @@ export default function Categories() {
       await api.put(`/api/categories/${id}`, { order: Number(value) || 0 });
       await reloadCategories();
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 
@@ -202,7 +193,7 @@ export default function Categories() {
       await api.put(`/api/categories/${target._id}`, { order: currentOrder });
       await reloadCategories();
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 

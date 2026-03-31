@@ -29,7 +29,7 @@ export default function Orders() {
       await api.patch('/api/orders/' + id + '/confirm-payment', {});
       setOrders((prev) => prev.map((o) => (o._id === id ? { ...o, status: 'paid' } : o)));
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 
@@ -38,7 +38,7 @@ export default function Orders() {
       await api.patch('/api/orders/' + id, { status });
       setOrders((prev) => prev.map((o) => (o._id === id ? { ...o, status } : o)));
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 

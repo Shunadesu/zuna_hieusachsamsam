@@ -26,7 +26,7 @@ export default function Promotions() {
       setForm({ name: '', type: 'percent', value: '', startDate: '', endDate: '' });
       setModalOpen(false);
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 
@@ -36,7 +36,7 @@ export default function Promotions() {
       await api.delete('/api/promotions/' + id);
       setList((prev) => prev.filter((p) => p._id !== id));
     } catch (err) {
-      alert(err.message);
+      if (!err?.silentAuthRedirect) alert(err.message);
     }
   };
 

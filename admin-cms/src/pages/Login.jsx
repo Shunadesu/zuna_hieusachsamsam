@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 
@@ -8,8 +8,15 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const setToken = useAuthStore((s) => s.setToken);
   const setUser = useAuthStore((s) => s.setUser);
+
+  useEffect(() => {
+    if (searchParams.get('expired') === '1') {
+      setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +29,9 @@ export default function Login() {
       }
       setToken(data.token);
       setUser(data.user);
-      navigate('/');
+      const from = searchParams.get('from');
+      const nextPath = from && from.startsWith('/') ? from : '/';
+      navigate(nextPath, { replace: true });
     } catch (e) {
       setError(e.message || 'Đăng nhập thất bại');
     }
