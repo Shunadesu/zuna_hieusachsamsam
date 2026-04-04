@@ -73,8 +73,9 @@ export default function BookDetailPage() {
   const saving =
     originalPrice != null ? Math.max(0, originalPrice - displayPrice) : 0;
   const stockCount = Number(bookDetail?.quantity || 0);
-  const inStock = bookDetail?.status !== "out_of_stock" && stockCount > 0;
-  const stockText = inStock ? `Còn ${stockCount} cuốn` : "Tạm hết hàng";
+  const isSold = bookDetail?.status === 'sold';
+  const inStock = !isSold && bookDetail?.status !== "out_of_stock" && stockCount > 0;
+  const stockText = isSold ? "Đã bán" : inStock ? `Còn ${stockCount} cuốn` : "Tạm hết hàng";
   const allImages = Array.from(
     new Set(
       [
@@ -135,7 +136,7 @@ export default function BookDetailPage() {
         const rows = data?.data || [];
         setSimilarBooks(
           rows
-            .filter((b) => b._id !== bookDetail._id)
+            .filter((b) => b._id !== bookDetail._id && b.status !== 'sold')
             .slice(0, 10)
             .map(normalizeBook),
         );
@@ -327,7 +328,9 @@ export default function BookDetailPage() {
             )}
             <span
               className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
-                inStock
+                isSold
+                  ? "bg-gray-200 text-gray-600 border-gray-300"
+                  : inStock
                   ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                   : "bg-gray-100 text-gray-600 border-gray-200"
               }`}
@@ -346,34 +349,44 @@ export default function BookDetailPage() {
           )}
 
           <div className="mt-4 p-3.5 rounded-lg bg-green-50/70 border border-green-100">
-            <div className="flex items-end gap-3 flex-wrap">
-              <span className="text-3xl font-bold text-green-800">
-                {displayPrice.toLocaleString("vi-VN")}₫
-              </span>
-              {originalPrice != null && (
-                <span className="text-gray-400 line-through text-lg">
-                  {originalPrice.toLocaleString("vi-VN")}₫
-                </span>
-              )}
-            </div>
-            {saving > 0 && (
-              <p className="text-sm text-green-700 mt-1">
-                Tiết kiệm {saving.toLocaleString("vi-VN")}₫
-              </p>
+            {isSold ? (
+              <div className="text-2xl font-bold text-gray-400 italic">
+                Đã bán
+              </div>
+            ) : (
+              <>
+                <div className="flex items-end gap-3 flex-wrap">
+                  <span className="text-3xl font-bold text-green-800">
+                    {displayPrice.toLocaleString("vi-VN")}₫
+                  </span>
+                  {originalPrice != null && (
+                    <span className="text-gray-400 line-through text-lg">
+                      {originalPrice.toLocaleString("vi-VN")}₫
+                    </span>
+                  )}
+                </div>
+                {saving > 0 && (
+                  <p className="text-sm text-green-700 mt-1">
+                    Tiết kiệm {saving.toLocaleString("vi-VN")}₫
+                  </p>
+                )}
+              </>
             )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4 text-sm">
             <div className="rounded-lg border border-gray-200 px-3 py-2">
               <p className="text-gray-500">Tình trạng</p>
-              <p className="font-medium text-gray-800">
-                {inStock ? "Sẵn hàng" : "Hết hàng"}
+              <p className={`font-medium ${isSold ? "text-gray-400" : "text-gray-800"}`}>
+                {isSold ? "Đã bán" : inStock ? "Sẵn hàng" : "Hết hàng"}
               </p>
             </div>
-            <div className="rounded-lg border border-gray-200 px-3 py-2">
-              <p className="text-gray-500">Số lượng hiện có</p>
-              <p className="font-medium text-gray-800">{stockCount} cuốn</p>
-            </div>
+            {!isSold && (
+              <div className="rounded-lg border border-gray-200 px-3 py-2">
+                <p className="text-gray-500">Số lượng hiện có</p>
+                <p className="font-medium text-gray-800">{stockCount} cuốn</p>
+              </div>
+            )}
           </div>
 
           {bookDetail.description && (
@@ -388,28 +401,36 @@ export default function BookDetailPage() {
           )}
 
           <div className="mt-5 flex flex-wrap gap-2.5 items-center">
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={!inStock}
-              className="px-5 py-2.5 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-            >
-              {added ? "Đã thêm vào giỏ!" : "Thêm vào giỏ"}
-            </button>
-            <button
-              type="button"
-              onClick={handleBuyNow}
-              disabled={!inStock}
-              className="px-5 py-2.5 rounded-lg bg-amber-500 text-white font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
-            >
-              Mua ngay
-            </button>
-            <Link
-              to="/sach"
-              className="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition text-sm font-medium"
-            >
-              Xem sách khác
-            </Link>
+            {isSold ? (
+              <div className="text-gray-400 italic text-sm">
+                Sách này đã được bán.
+              </div>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  disabled={!inStock}
+                  className="px-5 py-2.5 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  {added ? "Đã thêm vào giỏ!" : "Thêm vào giỏ"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBuyNow}
+                  disabled={!inStock}
+                  className="px-5 py-2.5 rounded-lg bg-amber-500 text-white font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  Mua ngay
+                </button>
+                <Link
+                  to="/sach"
+                  className="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition text-sm font-medium"
+                >
+                  Xem sách khác
+                </Link>
+              </>
+            )}
           </div>
 
           <div className="mt-5 text-xs text-gray-500 space-y-1">

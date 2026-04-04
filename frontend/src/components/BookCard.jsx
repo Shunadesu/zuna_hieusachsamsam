@@ -10,7 +10,8 @@ export default function BookCard({ book, originalPrice, discountPrice }) {
   const addItem = useCartStore((s) => s.addItem);
   const clearCart = useCartStore((s) => s.clearCart);
   const showToast = useToastStore((s) => s.show);
-  const displayPrice = discountPrice != null ? discountPrice : book.price;
+  const isSold = book.status === 'sold';
+  const displayPrice = isSold ? null : (discountPrice != null ? discountPrice : book.price);
   const hasDiscount = originalPrice != null && originalPrice > displayPrice;
   const discountPercent = hasDiscount
     ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100)
@@ -41,7 +42,7 @@ export default function BookCard({ book, originalPrice, discountPrice }) {
         className="block flex-1 min-w-0"
         title={book.title}
       >
-        <div className="aspect-[3/4] bg-green-50 overflow-hidden">
+        <div className="aspect-[3/4] bg-green-50 overflow-hidden relative">
           {book.image ? (
             <img
               src={book.image}
@@ -54,61 +55,87 @@ export default function BookCard({ book, originalPrice, discountPrice }) {
               📖
             </div>
           )}
+          {isSold && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                Đã bán
+              </span>
+            </div>
+          )}
+          {book.isHot && !isSold && (
+            <span className="absolute top-2 left-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
+              HOT
+            </span>
+          )}
         </div>
         <div className="p-3 flex-1 flex flex-col">
           <h3 className="text-base font-semibold text-green-800 line-clamp-1 min-w-0">
             {book.title}
           </h3>
           <div className="mt-2 min-h-[44px]">
-            <span className="text-green-800 font-bold block">
-              {displayPrice.toLocaleString("vi-VN")}₫
-            </span>
-            <div className="mt-0.5 flex items-center gap-2">
-              <span
-                className={`text-sm line-through ${hasDiscount ? "text-gray-400" : "text-transparent"}`}
-              >
-                {hasDiscount
-                  ? `${originalPrice?.toLocaleString("vi-VN")}₫`
-                  : "0₫"}
-              </span>
-              {discountPercent ? (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-red-50 text-red-600 text-xs font-semibold border border-red-100">
-                  -{discountPercent}%
+            {isSold ? (
+              <span className="text-gray-400 text-sm italic">Đã bán</span>
+            ) : (
+              <>
+                <span className="text-green-800 font-bold block">
+                  {displayPrice.toLocaleString("vi-VN")}₫
                 </span>
-              ) : (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold border border-transparent text-transparent">
-                  -0%
-                </span>
-              )}
-            </div>
+                <div className="mt-0.5 flex items-center gap-2">
+                  <span
+                    className={`text-sm line-through ${hasDiscount ? "text-gray-400" : "text-transparent"}`}
+                  >
+                    {hasDiscount
+                      ? `${originalPrice?.toLocaleString("vi-VN")}₫`
+                      : "0₫"}
+                  </span>
+                  {discountPercent ? (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-red-50 text-red-600 text-xs font-semibold border border-red-100">
+                      -{discountPercent}%
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold border border-transparent text-transparent">
+                      -0%
+                    </span>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </Link>
       <div className="p-3 pt-0 grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={handleAddToCart}
-          aria-label="Thêm vào giỏ"
-          className="w-full py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition flex items-center justify-center gap-1.5"
-        >
-          <FaShoppingCart
-            className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0"
-            aria-hidden
-          />
-          <span className="hidden md:inline">Thêm giỏ</span>
-        </button>
-        <button
-          type="button"
-          onClick={handleBuyNow}
-          aria-label="Mua ngay"
-          className="w-full py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition flex items-center justify-center gap-1.5"
-        >
-          <FaBolt
-            className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0"
-            aria-hidden
-          />
-          <span className="hidden md:inline">Mua ngay</span>
-        </button>
+        {isSold ? (
+          <div className="col-span-2 text-center text-gray-400 text-sm py-2 italic">
+            Sách đã bán
+          </div>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              aria-label="Thêm vào giỏ"
+              className="w-full py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition flex items-center justify-center gap-1.5"
+            >
+              <FaShoppingCart
+                className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0"
+                aria-hidden
+              />
+              <span className="hidden md:inline">Thêm giỏ</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleBuyNow}
+              aria-label="Mua ngay"
+              className="w-full py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition flex items-center justify-center gap-1.5"
+            >
+              <FaBolt
+                className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0"
+                aria-hidden
+              />
+              <span className="hidden md:inline">Mua ngay</span>
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

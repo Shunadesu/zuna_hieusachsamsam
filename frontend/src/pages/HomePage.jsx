@@ -1,10 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 import { useApiStore } from "../store/apiStore";
-import { useCartStore } from "../store/cartStore";
 import { useHomeHeroStore } from "../store/homeHeroStore";
-import { useToastStore } from "../store/toastStore";
 import SliderBanner from "../components/SliderBanner";
 import BelowSliderBanners from "../components/BelowSliderBanners";
 import BookGrid from "../components/BookGrid";
@@ -12,17 +9,9 @@ import HotBooksSection from "../components/HotBooksSection";
 import HomeHeroSkeleton from "../components/HomeHeroSkeleton";
 import HomeCategoryStripSkeleton from "../components/HomeCategoryStripSkeleton";
 import Seo from "../components/Seo";
-import { bookPathSlug } from "../utils/slugify";
-import {
-  FaTruck,
-  FaRecycle,
-  FaListUl,
-  FaShoppingCart,
-  FaBolt,
-} from "react-icons/fa";
+import { FaTruck, FaRecycle, FaListUl, FaChevronRight } from "react-icons/fa";
 
 export default function HomePage() {
-  const navigate = useNavigate();
   const {
     books,
     hotBooks,
@@ -35,9 +24,6 @@ export default function HomePage() {
     fetchPromotions,
     fetchSliders,
   } = useApiStore();
-  const addItem = useCartStore((s) => s.addItem);
-  const clearCart = useCartStore((s) => s.clearCart);
-  const showToast = useToastStore((s) => s.show);
   const heroDataReady = useHomeHeroStore((s) => s.heroDataReady);
   const categoryStripReady = useHomeHeroStore((s) => s.categoryStripReady);
   const setHeroDataReady = useHomeHeroStore((s) => s.setHeroDataReady);
@@ -116,50 +102,17 @@ export default function HomePage() {
     [topCategories, books],
   );
 
-  const getActivePromotionForBook = (bookId) =>
-    activePromotions.find((p) =>
-      (p.bookIds || []).some(
-        (b) => (typeof b === "object" ? b._id : b) === bookId,
-      ),
-    );
-
-  const getBookPriceInfo = (book) => {
-    const promo = getActivePromotionForBook(book._id);
-    const basePrice = Number(book.price || 0);
-    let salePrice = basePrice;
-    if (promo?.type === "percent")
-      salePrice = Math.round(basePrice * (1 - Number(promo.value || 0) / 100));
-    if (promo?.type === "fixed")
-      salePrice = Math.max(0, basePrice - Number(promo.value || 0));
-
-    const originalPrice = Number(book.originalPrice || 0);
-    if (originalPrice > salePrice) {
-      return { salePrice, originalPrice };
-    }
-    if (basePrice > salePrice) {
-      return { salePrice, originalPrice: basePrice };
-    }
-    return { salePrice, originalPrice: null };
-  };
-
-  const handleAddToCart = (book) => {
-    const { salePrice, originalPrice } = getBookPriceInfo(book);
-    addItem(
-      { ...book, price: salePrice, originalPrice: originalPrice || null },
-      1,
-    );
-    showToast("Đã thêm vào giỏ");
-  };
-
-  const handleBuyNow = (book) => {
-    const { salePrice, originalPrice } = getBookPriceInfo(book);
-    clearCart();
-    addItem(
-      { ...book, price: salePrice, originalPrice: originalPrice || null },
-      1,
-    );
-    navigate("/thanh-toan");
-  };
+  // Active promo with discount info
+  const featuredPromo = useMemo(() => {
+    if (activePromotions.length === 0) return null;
+    const top = activePromotions[0];
+    return {
+      ...top,
+      discountText: top.discountType === 'percent'
+        ? `Giảm ${top.discountValue}%`
+        : `Giảm ${Number(top.discountValue || 0).toLocaleString('vi-VN')}K`,
+    };
+  }, [activePromotions]);
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -167,19 +120,54 @@ export default function HomePage() {
         title="Mua bán sách cũ, truyện tranh xưa 199x, sách trước 1975"
         description="Sách Truyện Mỹ Hạnh - thu mua, bán sách truyện cũ toàn quốc với nhiều danh mục và ưu đãi mỗi ngày."
       />
+
+      {/* Main hero: category sidebar + slider */}
       <section className="mb-8">
         {!heroDataReady ? (
           <HomeHeroSkeleton />
         ) : (
-          <div className="lg:grid flex flex-col-reverse lg:grid-cols-10 gap-6 items-stretch">
+          <div className="lg:grid flex flex-col-reverse lg:grid-cols-10 gap-5 items-stretch">
             {/* LEFT: category sidebar (3/10) */}
             <aside className="lg:col-span-3 order-1">
-              <div className="bg-white rounded-xl shadow-sm border border-green-100 overflow-hidden h-full flex flex-col">
-                <div className="bg-green-700 text-white px-4 py-3 flex items-center gap-2">
+              <div className="bg-white rounded-2xl shadow-sm border border-green-100 overflow-hidden h-full flex flex-col">
+                {/* Sidebar header */}
+                <div className="bg-green-700 text-white px-4 py-3 flex items-center gap-2.5">
                   <FaListUl className="w-4 h-4" aria-hidden="true" />
-                  <h2 className="font-bold">Danh mục sách</h2>
+                  <h2 className="font-bold text-sm">Danh mục sách</h2>
                 </div>
-                <div className="divide-y divide-green-50 flex-1 overflow-auto">
+
+                {/* Quick actions */}
+                <div className="px-3 py-2.5 border-b border-green-50 space-y-2">
+                  <Link
+                    to="/ban-sach"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-green-50/80 hover:bg-green-100 transition group"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-green-800 text-white flex items-center justify-center shrink-0">
+                      <FaRecycle className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-green-900 leading-tight">Thanh lý sách cũ?</p>
+                      <p className="text-[11px] text-green-700 leading-tight">Gửi thông tin, chúng tôi liên hệ ngay</p>
+                    </div>
+                    <FaChevronRight className="w-3.5 h-3.5 text-green-600 shrink-0 ml-auto group-hover:translate-x-0.5 transition" />
+                  </Link>
+                  <Link
+                    to="/lien-he"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-green-50/80 hover:bg-green-100 transition group"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-green-800 text-white flex items-center justify-center shrink-0">
+                      <FaTruck className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-green-900 leading-tight">Chính sách vận chuyển</p>
+                      <p className="text-[11px] text-green-700 leading-tight">Giao hàng nhanh, toàn quốc</p>
+                    </div>
+                    <FaChevronRight className="w-3.5 h-3.5 text-green-600 shrink-0 ml-auto group-hover:translate-x-0.5 transition" />
+                  </Link>
+                </div>
+
+                {/* Category list */}
+                <div className="divide-y divide-green-50 flex-1 overflow-auto max-h-[420px]">
                   {(categories || []).map((cat) => (
                     <Link
                       key={cat._id}
@@ -206,7 +194,7 @@ export default function HomePage() {
                     </Link>
                   ))}
                   {(!categories || categories.length === 0) && (
-                    <div className="px-4 py-6 text-sm text-gray-500">
+                    <div className="px-4 py-6 text-sm text-gray-500 text-center">
                       Chưa có danh mục.
                     </div>
                   )}
@@ -214,93 +202,59 @@ export default function HomePage() {
               </div>
             </aside>
 
-            {/* RIGHT: info boxes + slider (7/10) */}
+            {/* RIGHT: promo banner + slider + below banners (7/10) */}
             <div className="lg:col-span-7 order-2 space-y-4 h-full flex flex-col">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Promo banner */}
+              {featuredPromo && (
                 <Link
-                  to="/ban-sach"
-                  className="bg-white rounded-xl shadow-sm border border-green-100 p-4 hover:shadow-md transition flex items-start gap-3"
+                  to="/khuyen-mai"
+                  className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-800 to-green-900 p-5 shadow-sm flex items-center gap-4"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-green-800 text-white flex items-center justify-center shrink-0">
-                    <FaRecycle className="w-5 h-5" aria-hidden="true" />
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-white rounded-full -translate-y-1/2 translate-x-1/4" />
+                    <div className="absolute bottom-0 left-12 w-24 h-24 bg-white rounded-full translate-y-1/2" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-bold text-green-900">
-                      Bạn cần thanh lý sách cũ?
+                  <div className="relative flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                        🔥 Khuyến mãi
+                      </span>
+                      {featuredPromo.name && (
+                        <span className="text-white/80 text-xs truncate">{featuredPromo.name}</span>
+                      )}
+                    </div>
+                    <p className="text-white font-bold text-lg leading-tight mb-0.5">
+                      {featuredPromo.discountText}
                     </p>
-                    <p className="text-sm text-gray-600 truncate">
-                      Gửi thông tin để cửa hàng liên hệ nhanh.
-                    </p>
+                    {featuredPromo.endDate && (
+                      <p className="text-white/60 text-xs">
+                        Hết hạn: {new Date(featuredPromo.endDate).toLocaleDateString('vi-VN')}
+                      </p>
+                    )}
+                  </div>
+                  <div className="relative flex items-center gap-2 rounded-xl bg-white/15 px-4 py-2.5 text-white text-sm font-medium backdrop-blur-sm group-hover:bg-white/25 transition">
+                    Xem ngay
+                    <FaChevronRight className="w-4 h-4 group-hover:translate-x-1 transition" />
                   </div>
                 </Link>
-                <Link
-                  to="/"
-                  className="bg-white rounded-xl shadow-sm border border-green-100 p-4 hover:shadow-md transition flex items-start gap-3"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-green-800 text-white flex items-center justify-center shrink-0">
-                    <FaTruck className="w-5 h-5" aria-hidden="true" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-bold text-green-900">
-                      Chính sách vận chuyển
-                    </p>
-                    <p className="text-sm text-gray-600 truncate">
-                      Giao hàng nhanh, hỗ trợ toàn quốc.
-                    </p>
-                  </div>
-                </Link>
-              </div>
+              )}
+
+              {/* Slider */}
               <div className="flex-1">
                 <SliderBanner />
               </div>
+
+              {/* Below banners */}
               <BelowSliderBanners sliders={sliders} />
             </div>
           </div>
         )}
       </section>
 
-      {(!categoryStripReady || (categories?.length ?? 0) > 0) && (
-        <section className="mb-8">
-          <h2 className="text-xl font-bold text-green-800 mb-4">
-            Thư mục sách
-          </h2>
-          {!categoryStripReady ? (
-            <HomeCategoryStripSkeleton />
-          ) : (
-            <div className="bg-white rounded-xl border border-green-100 shadow-sm px-4 py-5">
-              <div className="flex gap-5 overflow-x-auto pb-2">
-                {categories.map((cat) => (
-                  <Link
-                    key={cat._id}
-                    to={`/sach?category=${cat.slug}`}
-                    className="min-w-[90px] flex flex-col items-center text-center group"
-                  >
-                    <div className="w-20 h-20 rounded-full overflow-hidden border border-green-200 bg-green-50 shadow-sm group-hover:shadow-md transition">
-                      {cat.image ? (
-                        <img
-                          src={cat.image}
-                          alt={cat.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-2xl text-green-700">
-                          📚
-                        </div>
-                      )}
-                    </div>
-                    <p className="mt-2 text-sm font-medium text-gray-700 leading-tight line-clamp-2">
-                      {cat.name}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-        </section>
-      )}
-
+      {/* Hot books */}
       <HotBooksSection books={hotBooks} />
 
+      {/* Category books */}
       {categorySections.map(({ category, books: categoryBooks }) => (
         <section key={category._id} className="mb-8">
           <div className="flex items-center justify-between mb-4 gap-3">
@@ -324,103 +278,17 @@ export default function HomePage() {
             </div>
             <Link
               to={`/sach?category=${category.slug}`}
-              className="text-sm text-green-800 hover:text-green-700 font-medium"
+              className="flex items-center gap-1 text-sm text-green-800 hover:text-green-700 font-medium transition"
             >
-              Xem tất cả →
+              Xem tất cả <FaChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
           {categoryBooks.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {categoryBooks.map((book) => {
-                const { salePrice, originalPrice } = getBookPriceInfo(book);
-                const discountPercent =
-                  originalPrice && originalPrice > salePrice
-                    ? Math.round(
-                        ((originalPrice - salePrice) / originalPrice) * 100,
-                      )
-                    : null;
-                return (
-                  <div
-                    key={book._id}
-                    className="bg-white rounded-xl border border-green-100 shadow-sm overflow-hidden hover:shadow-md transition"
-                  >
-                    <Link to={`/sach/${bookPathSlug(book)}`} className="block">
-                      <div className="aspect-[3/4] bg-green-50">
-                        {book.image ? (
-                          <img
-                            src={book.image}
-                            alt={book.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-3xl text-green-700">
-                            📚
-                          </div>
-                        )}
-                      </div>
-                    </Link>
-                    <div className="p-3 min-w-0">
-                      <Link
-                        to={`/sach/${bookPathSlug(book)}`}
-                        className="block text-base font-semibold text-green-800 line-clamp-1 min-w-0 hover:text-green-700"
-                        title={book.title}
-                      >
-                        {book.title}
-                      </Link>
-                      <div className="mt-2 min-h-[48px]">
-                        <div className="text-green-700 font-bold text-base">
-                          {salePrice.toLocaleString("vi-VN")}₫
-                        </div>
-                        <div className="mt-0.5 flex items-center gap-2">
-                          <div
-                            className={`text-sm line-through ${originalPrice != null ? "text-gray-400" : "text-transparent"}`}
-                          >
-                            {originalPrice != null
-                              ? `${originalPrice.toLocaleString("vi-VN")}₫`
-                              : "0₫"}
-                          </div>
-                          {discountPercent ? (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-red-50 text-red-600 text-xs font-semibold border border-red-100">
-                              -{discountPercent}%
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold border border-transparent text-transparent">
-                              -0%
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="mt-3 grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleAddToCart(book)}
-                          aria-label="Thêm vào giỏ"
-                          className="py-2 rounded-lg bg-green-600 text-white text-xs md:text-sm font-medium hover:bg-green-700 transition flex items-center justify-center gap-1.5"
-                        >
-                          <FaShoppingCart
-                            className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0"
-                            aria-hidden
-                          />
-                          <span className="hidden md:inline">Thêm giỏ</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleBuyNow(book)}
-                          aria-label="Mua ngay"
-                          className="py-2 rounded-lg bg-amber-500 text-white text-xs md:text-sm font-medium hover:bg-amber-600 transition flex items-center justify-center gap-1.5"
-                        >
-                          <FaBolt
-                            className="w-[1.125rem] h-[1.125rem] md:hidden shrink-0"
-                            aria-hidden
-                          />
-                          <span className="hidden md:inline">Mua ngay</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <BookGrid
+              books={categoryBooks}
+              promotions={promotions}
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+            />
           ) : (
             <div className="bg-white border border-green-100 rounded-xl p-4 text-sm text-gray-500">
               Chưa có sách trong danh mục này.
@@ -429,12 +297,31 @@ export default function HomePage() {
         </section>
       ))}
 
+      {/* Promotion section */}
       {activePromotions.length > 0 && promoBooks.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-xl font-bold text-red-600 mb-4">
-            Sách khuyến mãi
-          </h2>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-red-50 border border-red-100 flex items-center justify-center text-red-500 text-lg">
+              🎁
+            </div>
+            <h2 className="text-xl font-bold text-red-600">
+              Sách khuyến mãi
+            </h2>
+          </div>
           <BookGrid books={promoBooks} promotions={promotions} />
+        </section>
+      )}
+
+      {/* All books CTA */}
+      {books && books.length > 0 && (
+        <section className="mb-8 text-center">
+          <Link
+            to="/sach"
+            className="inline-flex items-center gap-2 rounded-2xl bg-green-800 text-white px-8 py-4 text-base font-bold shadow-sm hover:bg-green-700 transition"
+          >
+            Xem tất cả sách ({books.length})
+            <FaChevronRight className="w-4 h-4" />
+          </Link>
         </section>
       )}
     </div>

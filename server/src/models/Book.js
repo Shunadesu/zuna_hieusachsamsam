@@ -11,7 +11,8 @@ const bookSchema = new mongoose.Schema(
     images: [{ type: String }],
     categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
     quantity: { type: Number, required: true, min: 0, default: 0 },
-    status: { type: String, enum: ['available', 'out_of_stock'], default: 'available' },
+    quantityType: { type: String, enum: ['book', 'set'], default: 'book' },
+    status: { type: String, enum: ['available', 'out_of_stock', 'sold'], default: 'available' },
     isHot: { type: Boolean, default: false },
   },
   { timestamps: true }

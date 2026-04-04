@@ -1,4 +1,5 @@
 import Order from '../models/Order.js';
+import Book from '../models/Book.js';
 
 export async function createOrder(req, res) {
   try {
@@ -57,6 +58,20 @@ export async function updateOrderStatus(req, res) {
     if (status === 'paid') order.paymentConfirmedAt = new Date();
     if (req.body.paymentNote !== undefined) order.paymentNote = req.body.paymentNote;
     await order.save();
+
+    // Auto-mark books as sold when order is completed
+    if (status === 'completed' && Array.isArray(order.items)) {
+      const bookIds = order.items
+        .filter((item) => item.bookId)
+        .map((item) => item.bookId);
+      if (bookIds.length > 0) {
+        await Book.updateMany(
+          { _id: { $in: bookIds } },
+          { $set: { status: 'sold' } }
+        );
+      }
+    }
+
     res.json(order);
   } catch (err) {
     res.status(500).json({ message: err.message });

@@ -1,6 +1,10 @@
 import BookCard from './BookCard';
 
-export default function BookGrid({ books, promotions = [] }) {
+export default function BookGrid({
+  books,
+  promotions = [],
+  className = "grid grid-cols-2 sm:grid-cols-3 gap-4",
+}) {
   const now = new Date();
   const activePromotions = promotions.filter((p) => {
     const start = new Date(p.startDate);
@@ -37,7 +41,7 @@ export default function BookGrid({ books, promotions = [] }) {
   };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+    <div className={className}>
       {books.map((book) => {
         const { display, original } = getBookPrice(book);
         return (

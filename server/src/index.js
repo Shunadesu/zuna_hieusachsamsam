@@ -16,6 +16,7 @@ import bankAccountRoutes from "./routes/bankAccountRoutes.js";
 import sellRequestRoutes from "./routes/sellRequestRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import sitemapRoutes from "./routes/sitemapRoutes.js";
+import statsRoutes from "./routes/statsRoutes.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -41,6 +42,7 @@ app.use("/api/site/config", siteConfigRoutes);
 app.use("/api/bank-accounts", bankAccountRoutes);
 app.use("/api/sell-requests", sellRequestRoutes);
 app.use("/api/admin/reports", reportRoutes);
+app.use("/api/admin/stats", statsRoutes);
 app.use(sitemapRoutes);
 
 app.listen(PORT, () =>

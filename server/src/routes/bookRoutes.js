@@ -18,6 +18,7 @@ router.get('/:id', bookController.getBookById);
 
 router.post('/', requireAdmin, bookController.createBook);
 router.put('/:id', requireAdmin, bookController.updateBook);
+router.patch('/:id/sold', requireAdmin, bookController.markSold);
 router.delete('/:id', requireAdmin, bookController.deleteBook);
 
 export default router;

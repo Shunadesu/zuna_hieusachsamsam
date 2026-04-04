@@ -3,9 +3,13 @@ import { useCartStore } from "../store/cartStore";
 import Seo from "../components/Seo";
 
 export default function CartPage() {
-  const { cartItems, updateQuantity, removeItem, getTotalPrice } =
+  const { cartItems, soldBookIds, removeItem, getTotalPrice, updateQuantity } =
     useCartStore();
-  const total = getTotalPrice();
+
+  const soldIds = new Set(soldBookIds);
+  const validItems = cartItems.filter((i) => !soldIds.has(i.bookId));
+  const soldItems = cartItems.filter((i) => soldIds.has(i.bookId));
+  const total = validItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -14,7 +18,30 @@ export default function CartPage() {
         description="Xem giỏ hàng của bạn, cập nhật số lượng và tiến hành thanh toán nhanh tại Sách Truyện Mỹ Hạnh."
       />
       <h1 className="text-2xl font-bold text-green-800 mb-6">Giỏ hàng</h1>
-      {cartItems.length === 0 ? (
+
+      {soldItems.length > 0 && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+          <p className="font-medium mb-1">
+            {soldItems.length} sách trong giỏ đã được bán và không thể đặt:
+          </p>
+          <ul className="list-disc list-inside space-y-0.5">
+            {soldItems.map((item) => (
+              <li key={item.bookId} className="flex items-center justify-between">
+                <span>{item.title}</span>
+                <button
+                  type="button"
+                  onClick={() => removeItem(item.bookId)}
+                  className="text-red-600 hover:underline ml-2 shrink-0"
+                >
+                  Xóa khỏi giỏ
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {validItems.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500 mb-4">Giỏ hàng trống.</p>
           <Link
@@ -38,7 +65,7 @@ export default function CartPage() {
                 </tr>
               </thead>
               <tbody>
-                {cartItems.map((item) =>
+                {validItems.map((item) =>
                   (() => {
                     const hasDiscount =
                       Number(item.originalPrice || 0) > Number(item.price || 0);

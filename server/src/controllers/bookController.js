@@ -124,6 +124,7 @@ export async function createBook(req, res) {
       images: imageList,
       categoryId: categoryId || null,
       quantity: Number(quantity) || 0,
+      quantityType: quantityType || 'book',
       status: quantity === 0 ? "out_of_stock" : status || "available",
       isHot: isHot === true || isHot === "true",
     });
@@ -164,6 +165,7 @@ export async function updateBook(req, res) {
       book.quantity = Number(quantity);
       book.status = book.quantity === 0 ? "out_of_stock" : "available";
     }
+    if (quantityType !== undefined) book.quantityType = quantityType;
     if (status !== undefined) book.status = status;
     if (isHot !== undefined) book.isHot = isHot === true || isHot === "true";
     if (title) book.slug = slugify(title);
@@ -179,6 +181,18 @@ export async function deleteBook(req, res) {
     const book = await Book.findByIdAndDelete(req.params.id);
     if (!book) return res.status(404).json({ message: "Book not found" });
     res.json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
+export async function markSold(req, res) {
+  try {
+    const book = await Book.findById(req.params.id);
+    if (!book) return res.status(404).json({ message: 'Book not found' });
+    book.status = 'sold';
+    await book.save();
+    res.json(book);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

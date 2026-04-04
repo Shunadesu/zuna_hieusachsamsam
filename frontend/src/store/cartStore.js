@@ -6,6 +6,7 @@ export const useCartStore = create(
   persist(
     (set, get) => ({
       cartItems: [],
+      soldBookIds: [],
 
       addItem: (book, quantity = 1) => {
         const normalizedOriginalPrice =
@@ -64,7 +65,27 @@ export const useCartStore = create(
 
       getTotalPrice: () =>
         get().cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0),
+
+      getValidItems: () => {
+        const soldIds = new Set(get().soldBookIds);
+        return get().cartItems.filter((i) => !soldIds.has(i.bookId));
+      },
+
+      markSold: (bookIds) => {
+        set((state) => ({
+          soldBookIds: [...new Set([...state.soldBookIds, ...bookIds])],
+          cartItems: state.cartItems.filter(
+            (i) => !bookIds.includes(i.bookId),
+          ),
+        }));
+      },
     }),
-    { name: "cart-storage" },
+    {
+      name: "cart-storage",
+      partialize: (state) => ({
+        cartItems: state.cartItems,
+        soldBookIds: state.soldBookIds,
+      }),
+    },
   ),
 );
